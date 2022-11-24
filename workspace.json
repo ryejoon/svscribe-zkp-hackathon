@@ -1,0 +1,59 @@
+{
+  "version": 2,
+  "projects": {
+    "zkp-hackathon": {
+      "root": "apps/zkp-hackathon",
+      "sourceRoot": "apps/zkp-hackathon/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:build",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/zkp-hackathon",
+            "main": "apps/zkp-hackathon/src/main.ts",
+            "tsConfig": "apps/zkp-hackathon/tsconfig.app.json",
+            "assets": ["apps/zkp-hackathon/src/assets"]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false,
+              "fileReplacements": [
+                {
+                  "replace": "apps/zkp-hackathon/src/environments/environment.ts",
+                  "with": "apps/zkp-hackathon/src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/node:execute",
+          "options": {
+            "buildTarget": "zkp-hackathon:build"
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["apps/zkp-hackathon/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/zkp-hackathon"],
+          "options": {
+            "jestConfig": "apps/zkp-hackathon/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    }
+  },
+  "cli": {
+    "defaultCollection": "@nrwl/nest"
+  },
+  "defaultProject": "zkp-hackathon"
+}
