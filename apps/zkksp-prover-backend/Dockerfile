@@ -32,10 +32,8 @@ RUN cp -r /app/zkksp-source/zokrates_stdlib/stdlib /root/.zokrates
 RUN cargo +nightly build -p zokrates_cli --release
 RUN ln -s /app/zkksp-source/target/release/zokrates /app/zokrates
 WORKDIR /root/.zokrates/stdlib
-RUN ls -l
 WORKDIR /app
-RUN ls -l
-RUN ./zokrates compile -i sha256.zok
-RUN ./zokrates compute-witness -a 314077308411032793321278816725012958289 316495952764820137513325325447450102725 67428615251739275197038733346106089224 232995379825841761673536055030921300908
-RUN ./zokrates generate-key-proof --output proof.json
+#RUN ./zokrates compile -i sha256.zok
+#RUN ./zokrates compute-witness -a 314077308411032793321278816725012958289 316495952764820137513325325447450102725 67428615251739275197038733346106089224 232995379825841761673536055030921300908
+#RUN ./zokrates generate-key-proof --output proof.json
 CMD node ./main.js

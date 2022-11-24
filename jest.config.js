@@ -4,5 +4,6 @@ module.exports = {
     '<rootDir>/apps/html',
     '<rootDir>/libs/todos',
     '<rootDir>/apps/zkksp-prover',
+    '<rootDir>/apps/zkksp-verifier-backend',
   ],
 };

@@ -1,6 +1,6 @@
 /* eslint-disable */
 export default {
-  displayName: 'zkksp-prover',
+  displayName: 'zkksp-prover-angular',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   globals: {
@@ -9,7 +9,7 @@ export default {
       stringifyContentPathRegex: '\\.(html|svg)$',
     },
   },
-  coverageDirectory: '../../coverage/apps/zkksp-prover',
+  coverageDirectory: '../../coverage/apps/zkksp-prover-angular',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': 'jest-preset-angular',
   },

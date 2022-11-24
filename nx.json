@@ -19,13 +19,19 @@
     }
   },
   "projects": {
+    "zkksp-prover-angular": {
+      "tags": []
+    },
+    "zkksp-prover-backend": {
+      "tags": []
+    },
     "html": {
       "tags": []
     },
     "todos": {
       "tags": []
     },
-    "api": {
+    "zkksp-verifier-backend": {
       "tags": []
     }
   },
