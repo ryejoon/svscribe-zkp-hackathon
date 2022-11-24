@@ -1,12 +1,16 @@
 version: '3.8'
 services:
-  html:
-    image: html
+  zkksp-prover-angular:
+    image: zkksp-prover-angular
+    ports:
+      - '8082:3332'
+  zkksp-prover-backend:
+    image: zkksp-prover-backend
+    ports:
+      - '8083:3333'
+  zkksp-verifier-backend:
+    image: zkksp-verifier-backend
     environment:
       - apiPath=http://api:3333
     ports:
-      - '8080:3334'
-  api:
-    image: api
-    ports:
-      - '8081:3333'
+      - '8084:3334'

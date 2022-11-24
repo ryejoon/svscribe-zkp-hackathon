@@ -13,7 +13,7 @@ RUN node --version
 RUN npm --version
 
 WORKDIR /app
-COPY ./dist/apps/api .
+COPY ./dist/apps/zkksp-prover-backend .
 ENV PORT=3333
 EXPOSE ${PORT}
 RUN npm install --production

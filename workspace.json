@@ -179,9 +179,7 @@
             "outputPath": "dist/apps/zkksp-prover-angular",
             "index": "apps/zkksp-prover-angular/src/index.html",
             "main": "apps/zkksp-prover-angular/src/main.ts",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": "apps/zkksp-prover-angular/src/polyfills.ts",
             "tsConfig": "apps/zkksp-prover-angular/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [

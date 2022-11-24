@@ -13,8 +13,8 @@ RUN node --version
 RUN npm --version
 
 WORKDIR /app
-COPY ./dist/apps/api .
-ENV PORT=3332
+COPY ./dist/apps/zkksp-verifier-backend .
+ENV PORT=3334
 EXPOSE ${PORT}
 RUN npm install --production
 # dependencies that nestjs needs

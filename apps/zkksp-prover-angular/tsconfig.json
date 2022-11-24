@@ -14,13 +14,12 @@
     }
   ],
   "compilerOptions": {
-    "target": "es2022",
+    "target": "es2020",
     "useDefineForClassFields": false,
     "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "noImplicitOverride": true,
+    "strict": false,
     "noPropertyAccessFromIndexSignature": true,
-    "noImplicitReturns": true,
+    "noImplicitReturns": false,
     "noFallthroughCasesInSwitch": true
   },
   "angularCompilerOptions": {
