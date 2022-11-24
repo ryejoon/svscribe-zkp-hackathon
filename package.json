@@ -24,7 +24,9 @@
     "workspace-generator": "nx workspace-generator",
     "dep-graph": "nx dep-graph",
     "help": "nx help",
-    "start-zkksp-prover": "nx serve zkksp-prover-angular --port 4203 -c development"
+    "docker-start-all": "docker-compose up",
+    "start-prover-angular": "nx serve zkksp-prover-angular --port 4203 -c development",
+    "start-prover-backend": "nx serve zkksp-prover-backend --port 4204"
   },
   "private": true,
   "dependencies": {
@@ -36,13 +38,13 @@
     "@angular/platform-browser": "~14.2.12",
     "@angular/platform-browser-dynamic": "~14.2.12",
     "@angular/router": "~14.2.12",
-    "@nestjs/common": "^7.0.0",
-    "@nestjs/core": "^7.0.0",
-    "@nestjs/platform-express": "^7.0.0",
+    "@nestjs/common": "^9.2.0",
+    "@nestjs/core": "^9.2.0",
+    "@nestjs/platform-express": "^9.2.0",
     "axios": "^1.2.0",
     "hbs": "^4.2.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "~7.5.0",
+    "rxjs": "~7.3.1",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
   },
@@ -54,15 +56,15 @@
     "@angular/cli": "~14.2.10",
     "@angular/compiler-cli": "~14.2.12",
     "@angular/language-service": "~14.2.12",
-    "@nestjs/schematics": "^7.0.0",
-    "@nestjs/testing": "^7.0.0",
+    "@nestjs/schematics": "^9.0.3",
+    "@nestjs/testing": "^9.2.0",
     "@nrwl/angular": "^14.8.6",
     "@nrwl/cli": "12.4.0",
     "@nrwl/cypress": "15.2.1",
     "@nrwl/eslint-plugin-nx": "12.4.0",
     "@nrwl/jest": "15.2.1",
     "@nrwl/linter": "12.4.0",
-    "@nrwl/nest": "12.4.0",
+    "@nrwl/nest": "14.8.6",
     "@nrwl/node": "^12.4.0",
     "@nrwl/tao": "12.4.0",
     "@nrwl/workspace": "12.4.0",
@@ -80,8 +82,8 @@
     "jest-preset-angular": "~12.2.2",
     "prettier": "2.2.1",
     "ts-jest": "28.0.5",
-    "ts-node": "10.9.1",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
     "typescript": "~4.8.4"
   }
 }
-

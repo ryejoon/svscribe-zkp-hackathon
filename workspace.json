@@ -37,7 +37,7 @@
         "serve": {
           "executor": "@nrwl/node:execute",
           "options": {
-            "buildTarget": "api:build"
+            "buildTarget": "zkksp-prover-backend:build"
           }
         },
         "deploy": {
@@ -65,75 +65,6 @@
           ],
           "options": {
             "jestConfig": "apps/zkksp-prover-backend/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      }
-    },
-    "html": {
-      "root": "apps/html",
-      "sourceRoot": "apps/html/src",
-      "projectType": "application",
-      "targets": {
-        "build": {
-          "executor": "@nrwl/node:build",
-          "outputs": [
-            "{options.outputPath}"
-          ],
-          "options": {
-            "outputPath": "dist/apps/html",
-            "main": "apps/html/src/main.ts",
-            "tsConfig": "apps/html/tsconfig.app.json",
-            "assets": [
-              "apps/html/src/assets"
-            ],
-            "generatePackageJson": true
-          },
-          "configurations": {
-            "production": {
-              "optimization": true,
-              "extractLicenses": true,
-              "inspect": false,
-              "fileReplacements": [
-                {
-                  "replace": "apps/html/src/environments/environment.ts",
-                  "with": "apps/html/src/environments/environment.prod.ts"
-                }
-              ]
-            }
-          }
-        },
-        "deploy": {
-          "executor": "@nrwl/workspace:run-commands",
-          "options": {
-            "commands": [
-              "nx build html",
-              "docker build -f ./apps/html/Dockerfile . -t html"
-            ],
-            "parallel": false
-          }
-        },
-        "serve": {
-          "executor": "@nrwl/node:execute",
-          "options": {
-            "buildTarget": "html:build"
-          }
-        },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "options": {
-            "lintFilePatterns": [
-              "apps/html/**/*.ts"
-            ]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": [
-            "coverage/apps/html"
-          ],
-          "options": {
-            "jestConfig": "apps/html/jest.config.js",
             "passWithNoTests": true
           }
         }
@@ -168,7 +99,6 @@
       "projectType": "application",
       "root": "apps/zkksp-prover-angular",
       "sourceRoot": "apps/zkksp-prover-angular/src",
-      "prefix": "zkp-hackathon",
       "targets": {
         "build": {
           "executor": "@angular-devkit/build-angular:browser",
@@ -284,7 +214,8 @@
             "tsConfig": "apps/zkksp-verifier-backend/tsconfig.app.json",
             "assets": [
               "apps/zkksp-verifier-backend/src/assets"
-            ]
+            ],
+            "generatePackageJson": true
           },
           "configurations": {
             "production": {
