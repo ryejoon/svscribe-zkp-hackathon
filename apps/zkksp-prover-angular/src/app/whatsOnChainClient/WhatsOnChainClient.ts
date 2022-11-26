@@ -124,6 +124,9 @@ export class WhatsOnChainClient {
   }
 
   getBalance(address: string) {
+    if (!address) {
+      return Promise.resolve(null);
+    }
     return this.axiosInstance.get<WhatsOnChainBalance>(
       `/${this.serviceConfig.network}/address/${address}/balance`,
       this._axiosRequestConfig

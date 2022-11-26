@@ -15,7 +15,7 @@
   ],
   "compilerOptions": {
     "target": "es2020",
-    "lib": ["es2020", "esnext"],
+    "lib": ["es2020", "esnext.bigint", "dom"],
     "useDefineForClassFields": false,
     "forceConsistentCasingInFileNames": true,
     "strict": false,

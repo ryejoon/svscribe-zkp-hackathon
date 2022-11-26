@@ -44,6 +44,7 @@
     "@nestjs/platform-express": "^9.2.0",
     "@runonbitcoin/nimble": "^1.0.14",
     "axios": "^1.2.0",
+    "crypto-js": "^4.1.1",
     "hbs": "^4.2.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "~7.3.1",
