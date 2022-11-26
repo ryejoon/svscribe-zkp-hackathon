@@ -12,30 +12,29 @@
   },
   "tasksRunnerOptions": {
     "default": {
-      "runner": "@nrwl/workspace/tasks-runners/default",
+      "runner": "@nrwl/nx-cloud",
       "options": {
-        "cacheableOperations": ["build", "lint", "test", "e2e"]
+        "cacheableOperations": ["build", "lint", "test", "e2e"],
+        "accessToken": "ZmZjNzg5ZjAtNzAzZC00Yzc2LWJhNTMtZDU3NDAxMWY4NDJkfHJlYWQtd3JpdGU=",
+        "parallel": 1
       }
-    }
-  },
-  "projects": {
-    "zkksp-prover-angular": {
-      "tags": []
-    },
-    "zkksp-prover-backend": {
-      "tags": []
-    },
-    "todos": {
-      "tags": []
-    },
-    "zkksp-verifier-backend": {
-      "tags": []
     }
   },
   "cli": {
     "defaultCollection": "@nrwl/nest"
   },
   "generators": {
+    "@nrwl/angular": {
+      "application": {
+        "linter": "eslint"
+      },
+      "library": {
+        "linter": "eslint"
+      },
+      "storybook-configuration": {
+        "linter": "eslint"
+      }
+    },
     "@nrwl/angular:application": {
       "style": "scss",
       "linter": "eslint",
@@ -50,5 +49,18 @@
       "style": "scss"
     }
   },
-  "defaultProject": "api"
+  "defaultProject": "zkksp-prover-angular",
+  "targetDependencies": {
+    "build": [
+      {
+        "target": "build",
+        "projects": "dependencies"
+      }
+    ]
+  },
+  "targetDefaults": {
+    "lint": {
+      "inputs": ["default", "{workspaceRoot}/.eslintrc.json"]
+    }
+  }
 }

@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@zkp-hackathon/todos": ["libs/todos/src/index.ts"]
+      "@zkp-hackathon/todos": ["libs/todos/src/index.ts"],
+      "txforge": ["@types/txforge"]
     }
   },
   "exclude": ["node_modules", "tmp"]

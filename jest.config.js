@@ -1,9 +1,8 @@
 module.exports = {
   projects: [
-    '<rootDir>/apps/api',
-    '<rootDir>/apps/html',
     '<rootDir>/libs/todos',
-    '<rootDir>/apps/zkksp-prover',
+    '<rootDir>/apps/zkksp-prover-angular',
+    '<rootDir>/apps/zkksp-prover-backend',
     '<rootDir>/apps/zkksp-verifier-backend',
   ],
 };

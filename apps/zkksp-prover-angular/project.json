@@ -1,0 +1,103 @@
+{
+  "projectType": "application",
+  "sourceRoot": "apps/zkksp-prover-angular/src",
+  "targets": {
+    "build": {
+      "executor": "@angular-devkit/build-angular:browser",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/zkksp-prover-angular",
+        "index": "apps/zkksp-prover-angular/src/index.html",
+        "main": "apps/zkksp-prover-angular/src/main.ts",
+        "polyfills": "apps/zkksp-prover-angular/src/polyfills.ts",
+        "tsConfig": "apps/zkksp-prover-angular/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          "apps/zkksp-prover-angular/src/favicon.ico",
+          "apps/zkksp-prover-angular/src/assets"
+        ],
+        "styles": ["apps/zkksp-prover-angular/src/styles.scss"],
+        "scripts": []
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "2kb",
+              "maximumError": "4kb"
+            }
+          ],
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "apps/zkksp-prover-angular/src/environments/environment.ts",
+              "with": "apps/zkksp-prover-angular/src/environments/environment.prod.ts"
+            }
+          ]
+        },
+        "development": {
+          "buildOptimizer": false,
+          "optimization": false,
+          "vendorChunk": true,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "namedChunks": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "executor": "@angular-devkit/build-angular:dev-server",
+      "configurations": {
+        "production": {
+          "browserTarget": "zkksp-prover-angular:build:production"
+        },
+        "development": {
+          "browserTarget": "zkksp-prover-angular:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx build zkksp-prover-angular",
+          "docker build -f ./apps/zkksp-prover-angular/Dockerfile . -t zkksp-prover-angular"
+        ],
+        "parallel": false
+      }
+    },
+    "extract-i18n": {
+      "executor": "@angular-devkit/build-angular:extract-i18n",
+      "options": {
+        "browserTarget": "zkksp-prover-angular:build"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": [
+          "apps/zkksp-prover-angular/**/*.ts",
+          "apps/zkksp-prover-angular/**/*.html"
+        ]
+      },
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/zkksp-prover-angular/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

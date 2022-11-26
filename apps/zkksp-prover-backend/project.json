@@ -1,0 +1,64 @@
+{
+  "sourceRoot": "apps/zkksp-prover-backend/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/zkksp-prover-backend",
+        "main": "apps/zkksp-prover-backend/src/main.ts",
+        "tsConfig": "apps/zkksp-prover-backend/tsconfig.app.json",
+        "assets": ["apps/zkksp-prover-backend/src/assets"],
+        "generatePackageJson": true,
+        "target": "node",
+        "compiler": "tsc"
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": false,
+          "fileReplacements": [
+            {
+              "replace": "apps/zkksp-prover-backend/src/environments/environment.ts",
+              "with": "apps/zkksp-prover-backend/src/environments/environment.prod.ts"
+            }
+          ]
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/node:node",
+      "options": {
+        "buildTarget": "zkksp-prover-backend:build"
+      }
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx build zkksp-prover-backend",
+          "docker build -f ./apps/zkksp-prover-backend/Dockerfile . -t zkksp-prover-backend"
+        ],
+        "parallel": false
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": ["apps/zkksp-prover-backend/**/*.ts"]
+      },
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/zkksp-prover-backend"],
+      "options": {
+        "jestConfig": "apps/zkksp-prover-backend/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

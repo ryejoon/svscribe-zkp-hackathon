@@ -1,0 +1,64 @@
+{
+  "sourceRoot": "apps/zkksp-verifier-backend/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/zkksp-verifier-backend",
+        "main": "apps/zkksp-verifier-backend/src/main.ts",
+        "tsConfig": "apps/zkksp-verifier-backend/tsconfig.app.json",
+        "assets": ["apps/zkksp-verifier-backend/src/assets"],
+        "generatePackageJson": true,
+        "target": "node",
+        "compiler": "tsc"
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": false,
+          "fileReplacements": [
+            {
+              "replace": "apps/zkksp-verifier-backend/src/environments/environment.ts",
+              "with": "apps/zkksp-verifier-backend/src/environments/environment.prod.ts"
+            }
+          ]
+        }
+      }
+    },
+    "deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx build zkksp-verifier-backend",
+          "docker build -f ./apps/zkksp-verifier-backend/Dockerfile . -t zkksp-verifier-backend"
+        ],
+        "parallel": false
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/node:node",
+      "options": {
+        "buildTarget": "zkksp-verifier-backend:build"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": ["apps/zkksp-verifier-backend/**/*.ts"]
+      },
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/apps/zkksp-verifier-backend"],
+      "options": {
+        "jestConfig": "apps/zkksp-verifier-backend/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}
