@@ -1,8 +1,8 @@
 FROM node:lts-alpine
 WORKDIR /app
 COPY ./dist/apps/zkksp-prover-angular .
+RUN npm install http-server -g
 ENV PORT=3332
 EXPOSE ${PORT}
-RUN npm install --production
-RUN npm install reflect-metadata tslib rxjs hbs
-CMD node ./main.js
+CMD http-server ./ -p ${PORT}
+

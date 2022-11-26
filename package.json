@@ -25,7 +25,7 @@
     "workspace-generator": "nx workspace-generator",
     "dep-graph": "nx dep-graph",
     "help": "nx help",
-    "docker-start-all": "docker-compose up",
+    "docker-start-all": "nx run zkksp-prover-angular:deploy && nx run zkksp-prover-backend:deploy && docker-compose up",
     "start-prover-angular": "nx serve zkksp-prover-angular --port 4203 -c development",
     "start-prover-backend": "nx serve zkksp-prover-backend --port 4204"
   },
@@ -36,6 +36,7 @@
     "@angular/compiler": "15.0.1",
     "@angular/core": "15.0.1",
     "@angular/forms": "15.0.1",
+    "@angular/material": "^15.0.0",
     "@angular/platform-browser": "15.0.1",
     "@angular/platform-browser-dynamic": "15.0.1",
     "@angular/router": "15.0.1",

@@ -1,11 +1,12 @@
 import {Component} from '@angular/core';
 import {Address, PrivateKey, PublicKey} from '@runonbitcoin/nimble';
 import {WhatsOnChainClient} from "../whatsOnChainClient/WhatsOnChainClient";
-import {BehaviorSubject, from, Observable} from "rxjs";
+import {BehaviorSubject, from, lastValueFrom, Observable} from "rxjs";
 import {WhatsOnChainBalance} from "../whatsOnChainClient/WhatsOnChainResponse";
 import {AxiosResponse} from "axios";
 import {HttpClient} from "@angular/common/http";
 import {privKeyToHexString, privKeyToSha256HashSplitted, splitDecimal} from "./input-generator";
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'prover-client-main',
@@ -22,6 +23,7 @@ import {privKeyToHexString, privKeyToSha256HashSplitted, splitDecimal} from "./i
           </ng-container>
         </ng-container>
         <button (click)="generateZkp()" *ngIf="address">Generate ZKP</button>
+        <mat-progress-spinner *ngIf="generatingProof$ | async" mode="indeterminate"></mat-progress-spinner>
       </div>
     </div>
   `,
@@ -49,12 +51,20 @@ export class ProverClientMainComponent {
     this.balance$ = from(this.wocClient.getBalance(this.address?.toString()));
   }
 
-  generateZkp() {
+  async generateZkp() {
     this.generatingProof$.next(true);
     const keyHexStr = privKeyToHexString(this.key);
     const [first, second] = splitDecimal(keyHexStr);
     const [firstHash, secondsHash] = privKeyToSha256HashSplitted(keyHexStr);
 
-    console.log(first, second, firstHash, secondsHash);
+    const res = await lastValueFrom(this.http.get(`${environment.proverHost}/generateProof`, {
+      params: {
+        keyParts: `${first} ${second}`,
+        hashParts: `${firstHash} ${secondsHash}`
+      }
+    })).finally(() => {
+      this.generatingProof$.next(false);
+    })
+    console.log(res);
   }
 }

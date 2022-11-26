@@ -23,10 +23,10 @@ export function splitDecimal(hexString: string): [string, string] {
 }
 
 export function privKeyToHexString(key: PrivateKey) {
-  return toBigInt(key.number.reverse()).toString(16);
+  return toBigInt(new Uint8Array(key.number).reverse()).toString(16);
 }
 
-export function toBigInt(buf: ArrayBuffer) {
+export function toBigInt(buf: ArrayBuffer): any {
   const arr = new Uint8Array(buf);
   let result = 0n;
   for (let i = arr.length - 1; i >= 0; i--) {

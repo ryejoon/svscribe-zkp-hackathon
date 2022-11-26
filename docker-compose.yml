@@ -1,9 +1,9 @@
 version: '3.8'
 services:
-#  zkksp-prover-angular:
-#    image: zkksp-prover-angular
-#    ports:
-#      - '8082:3332'
+  zkksp-prover-angular:
+    image: zkksp-prover-angular
+    ports:
+      - '8082:3332'
   zkksp-prover-backend:
     image: zkksp-prover-backend
     ports:

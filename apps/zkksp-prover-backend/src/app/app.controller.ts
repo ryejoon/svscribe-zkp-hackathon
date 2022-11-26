@@ -4,26 +4,20 @@ import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
 
-  @Get()
-  getData(
+  constructor(
+    private readonly appService: AppService
+  ) {}
+
+  @Get("generateProof")
+  async getData(
     @Query() query: any
   ) {
-    const params: string = query.test;
+    const keyParts: string = query.keyParts;
+    const hashParts: string = query.hashParts;
 
-    exec(`/app/zokrates compute-witness -a ${params}`,  (error, stdout, stderr) => {
-      if (error) {
-        console.log(`error: ${error.message}`);
-        return;
-      }
-      if (stderr) {
-        console.log(`stderr: ${stderr}`);
-        return;
-      }
-      console.log(`stdout: ${stdout}`);
-    }).on("exit", () => {
-      exec(`/app/zokrates generate-key-proof --output proof.json`,  (error, stdout, stderr) => {
+    const res = await new Promise((resolve, reject) => {
+      exec(`/app/zokrates compute-witness -a ${keyParts} ${hashParts}`, (error, stdout, stderr) => {
         if (error) {
           console.log(`error: ${error.message}`);
           return;
@@ -33,10 +27,23 @@ export class AppController {
           return;
         }
         console.log(`stdout: ${stdout}`);
-      })
-    });
+      }).on("exit", () => {
+        exec(`/app/zokrates generate-key-proof --output proof.json`, (error, stdout, stderr) => {
+          if (error) {
+            console.log(`error: ${error.message}`);
+            return;
+          }
+          if (stderr) {
+            console.log(`stderr: ${stderr}`);
+            return;
+          }
+          resolve(stdout);
+          console.log(`stdout: ${stdout}`);
+        })
+      });
+    })
 
-    return this.appService.getData();
+    return res;
   }
 
 }
