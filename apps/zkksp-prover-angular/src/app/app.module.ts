@@ -6,6 +6,7 @@ import { appRoutes } from './app.routes';
 import { ProverClientMainComponent } from './prover-client-main/prover-client-main.component';
 import {HttpClientModule} from "@angular/common/http";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 
 @NgModule({
   declarations: [AppComponent, ProverClientMainComponent],
@@ -13,6 +14,7 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
         BrowserModule,
         RouterModule.forRoot(appRoutes, {initialNavigation: 'enabledBlocking'}),
         HttpClientModule,
+        BrowserAnimationsModule,
         MatProgressSpinnerModule
     ],
   providers: [],
