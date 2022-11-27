@@ -14,9 +14,14 @@
     "default": {
       "runner": "@nrwl/nx-cloud",
       "options": {
-        "cacheableOperations": ["build", "lint", "test", "e2e"],
+        "cacheableOperations": [
+          "build",
+          "lint",
+          "test",
+          "e2e"
+        ],
         "accessToken": "ZmZjNzg5ZjAtNzAzZC00Yzc2LWJhNTMtZDU3NDAxMWY4NDJkfHJlYWQtd3JpdGU=",
-        "parallel": 1
+        "parallel": 3
       }
     }
   },
@@ -60,7 +65,10 @@
   },
   "targetDefaults": {
     "lint": {
-      "inputs": ["default", "{workspaceRoot}/.eslintrc.json"]
+      "inputs": [
+        "default",
+        "{workspaceRoot}/.eslintrc.json"
+      ]
     }
   }
 }

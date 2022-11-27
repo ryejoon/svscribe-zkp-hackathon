@@ -1,6 +1,11 @@
 import {Controller, Get, Query} from '@nestjs/common';
 import { exec } from 'child_process';
 import { AppService } from './app.service';
+import {environment} from "../environments/environment";
+
+const execOptions = Object.freeze({
+  cwd: environment.zokratesDir
+});
 
 @Controller()
 export class AppController {
@@ -10,25 +15,25 @@ export class AppController {
   ) {}
 
   @Get("generateProof")
-  async getData(
+  async generateProof(
     @Query() query: any
   ) {
     const keyParts: string = query.keyParts;
     const hashParts: string = query.hashParts;
 
     const res = await new Promise((resolve, reject) => {
-      exec(`/app/zokrates compute-witness -a ${keyParts} ${hashParts}`, (error, stdout, stderr) => {
+      exec(`${environment.zokratesCmdPath} compute-witness -a ${keyParts} ${hashParts}`, execOptions, (error, stdout, stderr) => {
         if (error) {
-          console.log(`error: ${error.message}`);
+          console.error(error);
           return;
         }
         if (stderr) {
-          console.log(`stderr: ${stderr}`);
+          console.error(stderr);
           return;
         }
         console.log(`stdout: ${stdout}`);
       }).on("exit", () => {
-        exec(`/app/zokrates generate-key-proof --output proof.json`, (error, stdout, stderr) => {
+        exec(`${environment.zokratesCmdPath} generate-key-proof --output proof.json`, execOptions, (error, stdout, stderr) => {
           if (error) {
             console.log(`error: ${error.message}`);
             return;
@@ -41,7 +46,7 @@ export class AppController {
           console.log(`stdout: ${stdout}`);
         })
       });
-    })
+    });
 
     return res;
   }

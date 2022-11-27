@@ -5,6 +5,10 @@ sample
 zokrates/flattened.json
 zokrates/proof.json
 
+/dynamodb-data/*
+.dynamodb
+sample
+
 # compiled output
 /dist
 /tmp

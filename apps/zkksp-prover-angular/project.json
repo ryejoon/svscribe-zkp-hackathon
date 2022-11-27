@@ -94,7 +94,7 @@
       "executor": "@nrwl/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/zkksp-prover-angular/jest.config.ts",
+        "jestConfig": "apps/zkksp-prover-angular/jest.config.js",
         "passWithNoTests": true
       }
     }

@@ -1,5 +1,5 @@
 module.exports = {
-  displayName: 'zkp-hackathon',
+  displayName: 'common',
   preset: '../../jest.preset.ts',
   globals: {
     'ts-jest': {
@@ -8,8 +8,8 @@ module.exports = {
   },
   testEnvironment: 'node',
   transform: {
-    '^.+\\.[tj]s$': 'ts-jest',
+    '^.+\\.[tj]sx?$': 'ts-jest',
   },
-  moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../coverage/apps/zkksp-prover-backend',
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  coverageDirectory: '../../coverage/libs/common',
 };

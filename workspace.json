@@ -1,6 +1,7 @@
 {
   "version": 2,
   "projects": {
+    "common": "libs/common",
     "todos": "libs/todos",
     "zkksp-prover-angular": "apps/zkksp-prover-angular",
     "zkksp-prover-backend": "apps/zkksp-prover-backend",

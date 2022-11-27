@@ -1,29 +1,50 @@
 import {Component} from '@angular/core';
-import {Address, PrivateKey, PublicKey} from '@runonbitcoin/nimble';
-import {WhatsOnChainClient} from "../whatsOnChainClient/WhatsOnChainClient";
-import {BehaviorSubject, from, lastValueFrom, Observable} from "rxjs";
-import {WhatsOnChainBalance} from "../whatsOnChainClient/WhatsOnChainResponse";
+import {PrivateKey} from '@runonbitcoin/nimble';
+import {
+  BehaviorSubject,
+  combineLatestWith,
+  exhaustMap,
+  filter,
+  firstValueFrom,
+  from,
+  lastValueFrom,
+  map,
+  Observable
+} from "rxjs";
 import {AxiosResponse} from "axios";
 import {HttpClient} from "@angular/common/http";
 import {privKeyToHexString, privKeyToSha256HashSplitted, splitDecimal} from "./input-generator";
 import {environment} from "../../environments/environment";
+import {App, WhatsOnChainBalance, WhatsOnChainClient} from "@zkp-hackathon/common";
+import {SensiletService} from "../service/sensilet.service";
 
 @Component({
   selector: 'prover-client-main',
   template: `
-    <div>
-      <div>
-        <button (click)="generateRandomKey()">Generate New Key</button>
-        <ng-container *ngIf="key">
-          <div>Address: {{address?.toString()}}</div>
+    <div fxLayout="row">
+      <div fxLayout="column" fxFlex="50">
+        <div>
+          <button (click)="generateRandomKey()">Generate New Key</button>
+          <div>
+            <input type="text" [(ngModel)]="tempKey" />
+            <button (click)="importKey()">Import Key</button>
+          </div>
+        </div>
+        <ng-container *ngIf="(privateKey$ | async) as key">
+          <div>Address: {{address$ | async}}</div>
           <div>Key: {{key?.toString()}}</div>
-          <div>{{key.number.length}} {{key.number | json}}</div>
           <ng-container *ngIf="(balance$ | async)?.data as balance">
             <div>Balance: {{balance.confirmed + balance.unconfirmed}}</div>
           </ng-container>
+
+          <button (click)="charge()">Charge 1000 Satoshi</button>
+          <button (click)="generateZkp()">Generate ZKP</button>
         </ng-container>
-        <button (click)="generateZkp()" *ngIf="address">Generate ZKP</button>
         <mat-progress-spinner *ngIf="generatingProof$ | async" mode="indeterminate"></mat-progress-spinner>
+      </div>
+      <div fxLayout="row wrap">
+        <app-view *ngFor="let app of apps$ | async" [app]="app">
+        </app-view>
       </div>
     </div>
   `,
@@ -32,32 +53,42 @@ import {environment} from "../../environments/environment";
 export class ProverClientMainComponent {
 
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private sensiletService: SensiletService
   ) {
   }
 
+  apps$ = this.getAllApps();
+  tempKey: string;
+  privateKey$ = new BehaviorSubject<PrivateKey>(null);
+  address$ = this.privateKey$.pipe(
+    filter(pk => pk != null),
+    map(pk => pk.toAddress().toString())
+  );
+
   generatingProof$ = new BehaviorSubject(false);
+  needsRefresh$ = new BehaviorSubject(true);
 
-  wocClient = new WhatsOnChainClient({}, { network: "main" });
+  wocClient = new WhatsOnChainClient(null, { network: "main" });
 
-  key: PrivateKey;
-  address: Address;
-
-  balance$: Observable<AxiosResponse<WhatsOnChainBalance, any>>;
+  balance$: Observable<AxiosResponse<WhatsOnChainBalance>> =
+    this.address$
+      .pipe(
+        combineLatestWith(this.needsRefresh$.asObservable()),
+        exhaustMap(([address]) => from(this.wocClient.getBalance(address)))
+      )
 
   generateRandomKey() {
-    this.key = PrivateKey.fromRandom();
-    this.address = Address.fromPublicKey(PublicKey.fromPrivateKey(this.key));
-    this.balance$ = from(this.wocClient.getBalance(this.address?.toString()));
+    this.privateKey$.next(PrivateKey.fromRandom());
   }
 
   async generateZkp() {
     this.generatingProof$.next(true);
-    const keyHexStr = privKeyToHexString(this.key);
+    const keyHexStr = privKeyToHexString(this.privateKey$.value);
     const [first, second] = splitDecimal(keyHexStr);
     const [firstHash, secondsHash] = privKeyToSha256HashSplitted(keyHexStr);
 
-    const res = await lastValueFrom(this.http.get(`${environment.proverHost}/generateProof`, {
+    const res = await lastValueFrom(this.http.get(`${environment.proverBackendHost}/generateProof`, {
       params: {
         keyParts: `${first} ${second}`,
         hashParts: `${firstHash} ${secondsHash}`
@@ -66,5 +97,26 @@ export class ProverClientMainComponent {
       this.generatingProof$.next(false);
     })
     console.log(res);
+  }
+
+  getAllApps(): Observable<App[]> {
+    return this.http.get(`${environment.verifierBackendHost}/apps`) as Observable<App[]>;
+  }
+
+  async charge() {
+    const address = await firstValueFrom(this.address$);
+    const res = await this.sensiletService.sensilet.transferBsv({
+      receivers: [{
+        address: address,
+        amount: 1000
+      }],
+      broadcast: true
+    })
+    console.log(res);
+    this.needsRefresh$.next(true);
+  }
+
+  importKey() {
+    this.privateKey$.next(PrivateKey.from(this.tempKey));
   }
 }

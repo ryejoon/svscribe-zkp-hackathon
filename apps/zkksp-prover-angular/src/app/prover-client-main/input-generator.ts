@@ -28,7 +28,7 @@ export function privKeyToHexString(key: PrivateKey) {
 
 export function toBigInt(buf: ArrayBuffer): any {
   const arr = new Uint8Array(buf);
-  let result = 0n;
+  let result = BigInt(0);
   for (let i = arr.length - 1; i >= 0; i--) {
     // @ts-ignore
     result = result * 256n + BigInt(arr[i]);

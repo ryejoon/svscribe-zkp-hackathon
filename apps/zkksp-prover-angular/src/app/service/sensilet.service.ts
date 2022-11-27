@@ -5,16 +5,22 @@ import { Injectable } from '@angular/core';
 })
 export class SensiletService {
 
-  private sensilet: Sensilet;
+  public sensilet: Sensilet;
 
   constructor() {
     if (typeof window['sensilet'] !== 'undefined') {
       this.sensilet = window['sensilet'];
       console.log(this.sensilet);
       this.sensilet.isConnect()
-        .then(r => console.log(r));
+        .then(async isConnect => {
+          if (!isConnect) {
+            await this.sensilet.requestAccount();
+          }
+        });
     }
   }
+
+
 }
 
 type Action = Promise<any>;

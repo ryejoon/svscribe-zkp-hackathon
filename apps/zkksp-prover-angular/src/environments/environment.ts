@@ -1,4 +1,5 @@
 export const environment = {
   production: false,
-  proverHost: "http://localhost:8083"
+  proverBackendHost: "http://localhost:3333",
+  verifierBackendHost: "http://localhost:3334"
 };

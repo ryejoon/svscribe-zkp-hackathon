@@ -8,9 +8,17 @@ services:
     image: zkksp-prover-backend
     ports:
       - '8083:3333'
-#  zkksp-verifier-backend:
-#    image: zkksp-verifier-backend
-#    environment:
-#      - apiPath=http://api:3333
-#    ports:
-#      - '8084:3334'
+  zkksp-verifier-backend:
+    image: zkksp-verifier-backend
+    ports:
+      - '8084:3334'
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: svscribe-dynamodb
+    hostname: dynamodb
+    restart: always
+    volumes:
+      - ./dynamodb-data:/home/dynamodblocal/data
+    ports:
+      - 8000:8000
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data/"

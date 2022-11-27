@@ -1,0 +1,2 @@
+zokrates/flattened.json filter=lfs diff=lfs merge=lfs -text
+zokrates/proof.json filter=lfs diff=lfs merge=lfs -text
