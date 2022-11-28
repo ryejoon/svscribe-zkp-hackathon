@@ -1,5 +1,10 @@
 # See http://help.github.com/ignore-files/ for more about ignoring files.
 
+# too large to commit
+sample
+zokrates/flattened.json
+zokrates/proof.json
+
 # compiled output
 /dist
 /tmp
