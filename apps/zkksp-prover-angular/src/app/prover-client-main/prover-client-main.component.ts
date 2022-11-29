@@ -26,12 +26,13 @@ import {ZkpService} from "../service/zkp.service";
         <ng-container *ngIf="(walletService.privateKey$ | async) as key">
           <div>Address: {{walletService.address$ | async}}</div>
           <div>Key: {{key?.toString()}}</div>
-          <ng-container *ngIf="(balance$ | async)?.data as balance">
+          <ng-container *ngIf="(walletService.balance$ | async)?.data as balance">
             <div>Balance: {{balance.confirmed + balance.unconfirmed}}</div>
           </ng-container>
           <button (click)="charge()">Charge 1000 Satoshi</button>
           <button (click)="zkpService.generateZkp()">Generate ZKP</button>
           <button (click)="zkpService.registerSubmitZkp()">Register Svscribe (submit ZKP)</button>
+          <div>Token: {{zkpService.token$ | async}}</div>
         </ng-container>
         <pre>{{zkpService.output | async}}</pre>
         <mat-progress-spinner *ngIf="zkpService.processing$ | async" mode="indeterminate"></mat-progress-spinner>
@@ -57,17 +58,6 @@ export class ProverClientMainComponent {
   apps$ = this.getAllApps();
   tempKey: string;
 
-  needsRefresh$ = new BehaviorSubject(true);
-
-  wocClient = new WhatsOnChainClient(null, { network: "main" });
-
-  balance$: Observable<AxiosResponse<WhatsOnChainBalance>> =
-    this.walletService.address$
-      .pipe(
-        combineLatestWith(this.needsRefresh$.asObservable()),
-        exhaustMap(([address]) => from(this.wocClient.getBalance(address)))
-      )
-
   generateRandomKey() {
     this.walletService.privateKey$.next(PrivateKey.fromRandom());
   }
@@ -85,8 +75,7 @@ export class ProverClientMainComponent {
       }],
       broadcast: true
     })
-    console.log(res);
-    this.needsRefresh$.next(true);
+    setTimeout(() => this.walletService.needsRefresh$.next(true), 1500);
   }
 
   importKey() {

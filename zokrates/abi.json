@@ -1,0 +1,24 @@
+{
+  "inputs": [
+    {
+      "name": "preimage",
+      "public": false,
+      "type": "array",
+      "components": {
+        "size": 2,
+        "type": "field"
+      }
+    },
+    {
+      "name": "h0",
+      "public": true,
+      "type": "field"
+    },
+    {
+      "name": "h1",
+      "public": true,
+      "type": "field"
+    }
+  ],
+  "outputs": []
+}

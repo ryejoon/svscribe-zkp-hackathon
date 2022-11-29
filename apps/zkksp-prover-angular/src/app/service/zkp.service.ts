@@ -19,6 +19,7 @@ export class ZkpService {
 
   public processing$ = new BehaviorSubject(false);
   public output = new BehaviorSubject(null);
+  public token$ = new BehaviorSubject("87px30cr7ev2lf558ngr5lk5nmedsd");
 
   public async generateZkp() {
     this.processing$.next(true);
@@ -41,12 +42,34 @@ export class ZkpService {
   }
 
   public async registerSubmitZkp() {
+    this.processing$.next(true);
     const pk = this.walletService.privateKey$;
     const pkUncompressed = new PrivateKey(pk.value.number, false, false, true);
     const res = await lastValueFrom(
       this.http.post(`${environment.proverBackendHost}/registerProof`, {
         publicKey: pkUncompressed.toPublicKey().toString()
     })
+    ).finally(() => {
+      this.processing$.next(false);
+    })
+    const token = res['token'];
+    if (token) {
+      this.token$.next(token);
+    }
+    console.log(res);
+  }
+
+  public async authorizeApp(appId: string) {
+    this.processing$.next(true);
+    const res = await lastValueFrom(
+      this.http.get(`${environment.verifierBackendHost}/authorize`, {
+        headers: {
+          authorization: `Bearer ${this.token$.value}`
+        },
+        params: {
+          appId
+        }
+      })
     ).finally(() => {
       this.processing$.next(false);
     })

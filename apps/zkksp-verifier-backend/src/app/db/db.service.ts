@@ -112,6 +112,7 @@ export class DbService implements OnModuleInit {
         ":pk": `tkn#${token}`
       }
     }).promise();
+    console.log(res);
     const vals = Object.values(res.Items);
     return vals[0] as TokenItem;
   }

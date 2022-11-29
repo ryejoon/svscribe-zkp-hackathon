@@ -152,9 +152,12 @@ export class WhatsOnChainClient {
     );
   }
 
-  putTransaction(rawTx: string) {
+  putTransaction(txhex: string) {
     return this.axiosInstance.post(
       `${this.serviceConfig.network}/tx/raw`,
+      {
+        txhex
+      },
       this._axiosRequestConfig
     );
   }

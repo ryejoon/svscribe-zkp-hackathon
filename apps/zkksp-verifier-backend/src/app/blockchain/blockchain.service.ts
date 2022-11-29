@@ -1,6 +1,8 @@
 import {Injectable, OnModuleInit} from '@nestjs/common';
 import {WhatsOnChainClient} from "@zkp-hackathon/common";
 import {Br, OpCode, Tx, TxIn} from "@ts-bitcoin/core";
+import {classes} from "@runonbitcoin/nimble";
+import PublicKey = classes.PublicKey;
 
 @Injectable()
 export class BlockchainService implements OnModuleInit {
@@ -41,5 +43,5 @@ function isP2PKHfromAddress(txin: TxIn, addressOrPubKey: string) {
   }
 
   const [signature, pubKeyOrAddress] = chunks;
-  return addressOrPubKey === pubKeyOrAddress.buf.toString('hex');
+  return addressOrPubKey === PublicKey.fromString(pubKeyOrAddress.buf.toString('hex')).toAddress().toString();
 }

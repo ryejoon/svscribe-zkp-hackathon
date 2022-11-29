@@ -1,10 +1,9 @@
 import {Body, Controller, Get, Headers, Post, Query} from '@nestjs/common';
-import {randomUUID} from 'crypto';
 import {exec} from "child_process";
 import * as fs from "fs";
 import {environment} from '../environments/environment';
 import {BlockchainService} from "./blockchain/blockchain.service";
-import {DbService} from "./db/db.service";
+import {DbService, generateRandomAlphanumeric} from "./db/db.service";
 import {P2PKHLockScript, PublicKey, Transaction} from "@runonbitcoin/nimble";
 
 type RegisterPayload = {
@@ -30,7 +29,7 @@ export class AppController {
     const publicKey = payload.publicKey;
     fs.writeFileSync(`${environment.zokratesDir}/${publicKey}.json`, JSON.stringify(payload.proof));
 
-    const res = await new Promise((resolve, reject) => {
+    const stdOut = await new Promise((resolve, reject) => {
       let stdOutTemp: string;
       const command = `${environment.zokratesCmdPath} verify-key-proof -p ${publicKey} -j ${publicKey}.json`;
       console.log(`running command: ${command}`)
@@ -58,7 +57,20 @@ export class AppController {
       })
     })
 
-    return res;
+    if (stdOut) {
+      const token = generateRandomAlphanumeric(30);
+      await this.db.insertToken({
+        token: token,
+        publicKey
+      });
+      return {
+        token,
+        stdOut
+      }
+    }
+    return {
+      stdOut
+    };
   }
 
   @Get("apps")
@@ -72,15 +84,21 @@ export class AppController {
     const token = authHeader.split(' ')[1];
     const tokenItem = await this.db.queryTokenItem(token);
     if (!tokenItem) {
-      throw new Error("Invalid Token");
+      throw new Error(`Invalid Token ${token}`);
     }
 
     const pr = await this.db.queryPaymentPeriods(tokenItem.publicKey);
-    const now = Date.now();
+    const start = Date.now();
+    const now = start;
 
-    if (pr?.length && pr.find(p => p.start < now && now < p.end)) {
+    const targetPeriod = pr?.find(p => p.start < now && now < p.end);
+    if (targetPeriod) {
       // auth succeed
-      return true;
+      return {
+        authorized: true,
+        start: targetPeriod.start,
+        end: targetPeriod.end
+      };
     }
     const appId = query['appId'];
     const app = await this.db.queryApp(appId);
@@ -89,7 +107,10 @@ export class AppController {
     const payerAddress = PublicKey.from(tokenItem.publicKey).toAddress().toString();
     const txRaw = await this.blockchainService.fetchTxsAndFilterFirst(app.paymentAddress, payerAddress, false);
     if (!txRaw) {
-      return false;
+      return {
+        authorized: false,
+        reason: `no payment from ${payerAddress} to ${app.paymentAddress} found`
+      };
     }
     const tx = Transaction.fromHex(txRaw);
     const paymentOutput = tx.outputs.find(o => {
@@ -98,19 +119,29 @@ export class AppController {
       }
       return false;
     })
+    // todo: need to bypass if already consumed period
     if (paymentOutput.satoshis >= app.priceSatoshis) {
       // valid
       console.log(`Starting period for app ${app.appId} with payment ${tx.hash}`);
+      const end = start + (app.durationSeconds * 1000);
       await this.db.insertPayment({
         appId: app.appId,
-        start: Date.now(),
-        end: Date.now() + (app.durationSeconds * 1000),
+        start: start,
+        end,
         txid: tx.hash,
         publicKey: tokenItem.publicKey
       });
-      return true;
+      return {
+        authorized: true,
+        start,
+        end
+      };
     }
-    console.log(`Payment not enough: ${paymentOutput.satoshis}`);
-    return false;
+    const msg = `Payment not enough: ${paymentOutput.satoshis}`;
+    console.log(msg);
+    return {
+      authorized: false,
+      message: msg
+    };
   }
 }

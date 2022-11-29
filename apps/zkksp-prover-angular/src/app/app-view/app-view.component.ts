@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import {App} from "@zkp-hackathon/common";
 import {BehaviorSubject} from "rxjs";
 import {WalletService} from "../service/wallet.service";
+import {ZkpService} from "../service/zkp.service";
 
 @Component({
   selector: 'app-view',
@@ -13,6 +14,8 @@ import {WalletService} from "../service/wallet.service";
       <ng-container *ngIf="{processing: paymentProcessing$ | async} as context">
         <button (click)="pay()" *ngIf="!context.processing">Pay</button>
         <mat-progress-bar mode="indeterminate" *ngIf="context.processing"></mat-progress-bar>
+
+        <button (click)="checkAuth()" *ngIf="!context.processing">Check Auth</button>
       </ng-container>
     </div> `,
   styles: [`
@@ -25,15 +28,21 @@ export class AppViewComponent {
   public paymentProcessing$ = new BehaviorSubject(false);
 
   constructor(
-    private walletService: WalletService
+    private walletService: WalletService,
+    private zkpService: ZkpService
   ) {
   }
 
   @Input() app: App;
 
-  pay() {
+  async pay() {
     this.paymentProcessing$.next(true);
+    await this.walletService.pay(this.app.paymentAddress, this.app.priceSatoshis);
+    this.paymentProcessing$.next(false);
+  }
 
-
+  async checkAuth() {
+    const res = await this.zkpService.authorizeApp(this.app.appId)
+    console.log(res);
   }
 }
