@@ -10,6 +10,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {FormsModule} from '@angular/forms';
 import {AppViewComponent} from './app-view/app-view.component';
 import {FlexLayoutModule} from "@angular/flex-layout";
+import {MatProgressBarModule} from "@angular/material/progress-bar";
 
 @NgModule({
   declarations: [AppComponent, ProverClientMainComponent, AppViewComponent],
@@ -20,7 +21,8 @@ import {FlexLayoutModule} from "@angular/flex-layout";
     BrowserAnimationsModule,
     MatProgressSpinnerModule,
     FormsModule,
-    FlexLayoutModule
+    FlexLayoutModule,
+    MatProgressBarModule
   ],
   providers: [],
   bootstrap: [AppComponent],

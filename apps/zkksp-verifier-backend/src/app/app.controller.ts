@@ -5,7 +5,7 @@ import * as fs from "fs";
 import {environment} from '../environments/environment';
 import {BlockchainService} from "./blockchain/blockchain.service";
 import {DbService} from "./db/db.service";
-import {classes, P2PKHLockScript, PublicKey, Transaction} from "@runonbitcoin/nimble";
+import {P2PKHLockScript, PublicKey, Transaction} from "@runonbitcoin/nimble";
 
 type RegisterPayload = {
   publicKey: string,

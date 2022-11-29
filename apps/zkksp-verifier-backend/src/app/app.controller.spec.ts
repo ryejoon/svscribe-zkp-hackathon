@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import {BlockchainService} from "./blockchain/blockchain.service";
 import {DbService} from "./db/db.service";
 import {PrivateKey} from "@runonbitcoin/nimble";
+import {ProofJson} from "@zkp-hackathon/common";
 
 
 jest.setTimeout(300000);
@@ -18,11 +19,6 @@ describe('AppController', () => {
       providers: [BlockchainService, DbService],
     }).compile();
   });
-
-  type ProofJson = {
-    proof: any[];
-    inputs: [string, string]
-  }
 
   describe('verify', () => {
     it('should return true for valid proof', async () => {

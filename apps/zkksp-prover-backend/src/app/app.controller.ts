@@ -1,7 +1,10 @@
-import {Controller, Get, Query} from '@nestjs/common';
-import { exec } from 'child_process';
-import { AppService } from './app.service';
+import {Body, Controller, Get, Post, Query} from '@nestjs/common';
+import {exec} from 'child_process';
 import {environment} from "../environments/environment";
+import {ProofJson} from "@zkp-hackathon/common";
+import * as fs from "fs";
+import {HttpService} from "@nestjs/axios";
+import {firstValueFrom} from "rxjs";
 
 const execOptions = Object.freeze({
   cwd: environment.zokratesDir
@@ -11,7 +14,7 @@ const execOptions = Object.freeze({
 export class AppController {
 
   constructor(
-    private readonly appService: AppService
+    private readonly httpService: HttpService
   ) {}
 
   @Get("generateProof")
@@ -42,12 +45,27 @@ export class AppController {
             console.log(`stderr: ${stderr}`);
             return;
           }
-          resolve(stdout);
           console.log(`stdout: ${stdout}`);
+          resolve(stdout);
         })
       });
     });
 
+    return res;
+  }
+
+  @Post("registerProof")
+  async registerProof(@Body() payload: { publicKey: string }) {
+    const proofJson: ProofJson = JSON.parse(fs.readFileSync(`${environment.zokratesCmdPath}/proof.json`, { encoding: "utf8" }));
+    const res = await firstValueFrom(this.httpService.post(`${environment.zkpVerifierHost}/register`, {
+      publicKey: payload.publicKey,
+      proof: proofJson
+    }, {
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    }));
+
+    console.log(res);
     return res;
   }
 

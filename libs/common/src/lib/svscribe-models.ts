@@ -24,3 +24,8 @@ export type AppCreateInput = {
 export type App = AppCreateInput & {
   appId: string;
 }
+
+export type ProofJson = {
+  proof: any[];
+  inputs: [string, string]
+}
