@@ -4,6 +4,7 @@ import {privKeyToHexString, privKeyToSha256HashSplitted, splitDecimal} from "../
 import {environment} from "../../environments/environment";
 import {WalletService} from "./wallet.service";
 import {HttpClient} from "@angular/common/http";
+import {PrivateKey} from "@runonbitcoin/nimble";
 
 @Injectable({
   providedIn: 'root'
@@ -40,10 +41,11 @@ export class ZkpService {
   }
 
   public async registerSubmitZkp() {
-    const publicKey = this.walletService.privateKey$.value.toPublicKey();
+    const pk = this.walletService.privateKey$;
+    const pkUncompressed = new PrivateKey(pk.value.number, false, false, true);
     const res = await lastValueFrom(
       this.http.post(`${environment.proverBackendHost}/registerProof`, {
-        publicKey: publicKey.toString()
+        publicKey: pkUncompressed.toPublicKey().toString()
     })
     ).finally(() => {
       this.processing$.next(false);

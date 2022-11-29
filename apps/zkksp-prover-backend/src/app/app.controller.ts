@@ -5,6 +5,8 @@ import {ProofJson} from "@zkp-hackathon/common";
 import * as fs from "fs";
 import {HttpService} from "@nestjs/axios";
 import {firstValueFrom} from "rxjs";
+import {classes} from "@runonbitcoin/nimble";
+
 
 const execOptions = Object.freeze({
   cwd: environment.zokratesDir
@@ -25,7 +27,9 @@ export class AppController {
     const hashParts: string = query.hashParts;
 
     const res = await new Promise((resolve, reject) => {
-      exec(`${environment.zokratesCmdPath} compute-witness -a ${keyParts} ${hashParts}`, execOptions, (error, stdout, stderr) => {
+      const command = `${environment.zokratesCmdPath} compute-witness -a ${keyParts} ${hashParts}`;
+      console.log(command);
+      exec(command, execOptions, (error, stdout, stderr) => {
         if (error) {
           console.error(error);
           return;
@@ -57,6 +61,7 @@ export class AppController {
   @Post("registerProof")
   async registerProof(@Body() payload: { publicKey: string }) {
     const proofJson: ProofJson = JSON.parse(fs.readFileSync(`${environment.zokratesCmdPath}/proof.json`, { encoding: "utf8" }));
+    console.log(`invoking verifier with proof for pubKey ${payload.publicKey}`);
     const res = await firstValueFrom(this.httpService.post(`${environment.zkpVerifierHost}/register`, {
       publicKey: payload.publicKey,
       proof: proofJson
@@ -66,7 +71,7 @@ export class AppController {
     }));
 
     console.log(res);
-    return res;
+    return res.data;
   }
 
 }

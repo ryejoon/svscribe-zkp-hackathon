@@ -27,12 +27,14 @@ export class AppController {
 
   @Post("register")
   async register(@Body() payload: RegisterPayload) {
-    const uuid = randomUUID();
-    fs.writeFileSync(`${environment.zokratesDir}/${uuid}.json`, JSON.stringify(payload.proof));
+    const publicKey = payload.publicKey;
+    fs.writeFileSync(`${environment.zokratesDir}/${publicKey}.json`, JSON.stringify(payload.proof));
 
     const res = await new Promise((resolve, reject) => {
       let stdOutTemp: string;
-      const process = exec(`${environment.zokratesCmdPath} verify-key-proof -p ${payload.publicKey} -j ${uuid}.json`, execOptions, (error, stdout, stderr) => {
+      const command = `${environment.zokratesCmdPath} verify-key-proof -p ${publicKey} -j ${publicKey}.json`;
+      console.log(`running command: ${command}`)
+      const process = exec(command, execOptions, (error, stdout, stderr) => {
         if (error) {
           console.log(stdout, error);
           return;

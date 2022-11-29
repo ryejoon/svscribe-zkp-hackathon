@@ -1,7 +1,7 @@
 import {classes} from "@runonbitcoin/nimble";
 import {
   bufferToHexString,
-  hexStringToBuffer,
+  hexStringToBuffer, hexToBuffer,
   privKeyToHexString,
   privKeyToSha256HashSplitted,
   splitDecimal
@@ -14,7 +14,7 @@ describe('test', () => {
   it("spec name", () => {
     const pk = PrivateKey.fromRandom();
     console.log(pk.toString());
-    console.log(bufferToHexString(pk.number));
+    console.log(bufferToHexString(new Uint8Array(pk.number)));
   });
   const samplePrivKeyHexString = "ec4916dd28fc4c10d78e287ca5d9cc51ee1ae73cbfde08c6b37324cbfaac8bc5";
 
@@ -44,5 +44,10 @@ describe('test', () => {
       .toBe("0494d6deea102c33307a5ae7e41515198f6fc19d3b11abeca5bff56f1011ed2d8e3d8f02cbd20e8c53d8050d681397775d0dc8b0ad406b261f9b4c94404201cab3");
 
     expect(privKeyToHexString(unCompressedPk)).toBe(samplePrivKeyHexString);
+  });
+
+  it("spec name", () => {
+    const pk = new PrivateKey(hexToBuffer("ec4916dd28fc4c10d78e287ca5d9cc51ee1ae73cbfde08c6b37324cbfaac8bc5"), false, false, true);
+    console.log(pk.toString());
   });
 });
