@@ -35,3 +35,10 @@ export type ProofJson = {
   proof: any[];
   inputs: [string, string]
 }
+
+export type AuthStatus = {
+  authorized: boolean,
+  start?: number,
+  end?: number,
+  reason?: string
+}

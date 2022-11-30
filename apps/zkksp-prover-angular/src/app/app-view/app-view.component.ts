@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
-import {App} from "@zkp-hackathon/common";
-import {BehaviorSubject} from "rxjs";
+import {App, AuthStatus} from "@zkp-hackathon/common";
+import {BehaviorSubject, combineLatest, filter, map, mergeMap, timer} from "rxjs";
 import {WalletService} from "../service/wallet.service";
 import {ZkpService} from "../service/zkp.service";
 
@@ -16,6 +16,15 @@ import {ZkpService} from "../service/zkp.service";
         <mat-progress-bar mode="indeterminate" *ngIf="context.processing"></mat-progress-bar>
 
         <button (click)="checkAuth()" *ngIf="!context.processing">Check Auth</button>
+        {{_remainingTime$ | async}}
+      </ng-container>
+      <ng-container *ngIf="authStatus | async as status">
+        <div *ngIf="status.authorized" fxLayout="column">
+          <div>Authorized</div>
+        </div>
+        <div *ngIf="!status.authorized" fxLayout="column">
+          <div>Unauthorized: {{status.reason}}</div>
+        </div>
       </ng-container>
     </div> `,
   styles: [`
@@ -26,6 +35,19 @@ import {ZkpService} from "../service/zkp.service";
 })
 export class AppViewComponent {
   public paymentProcessing$ = new BehaviorSubject(false);
+
+  public authStatus = new BehaviorSubject<AuthStatus>(null);
+  public _remainingTime$ = combineLatest([
+    timer(0, 1000),
+    this.authStatus.asObservable()
+  ]).pipe(
+    filter(([time, auth]) => auth != null),
+    map(
+      ([time, auth]) => {
+        return auth.end - Date.now();
+      }
+    )
+  );
 
   constructor(
     private walletService: WalletService,
@@ -42,7 +64,7 @@ export class AppViewComponent {
   }
 
   async checkAuth() {
-    const res = await this.zkpService.authorizeApp(this.app.appId)
-    console.log(res);
+    const res: AuthStatus = await this.zkpService.authorizeApp(this.app.appId)
+    this.authStatus.next(res);
   }
 }

@@ -5,6 +5,7 @@ import {environment} from "../../environments/environment";
 import {WalletService} from "./wallet.service";
 import {HttpClient} from "@angular/common/http";
 import {PrivateKey} from "@runonbitcoin/nimble";
+import {AuthStatus} from "@zkp-hackathon/common";
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +24,8 @@ export class ZkpService {
 
   public async generateZkp() {
     this.processing$.next(true);
-    const keyHexStr = privKeyToHexString(this.walletService.privateKey$.value);
+    const privateKey = this.walletService.privateKey$.value;
+    const keyHexStr = privKeyToHexString(privateKey);
     const [first, second] = splitDecimal(keyHexStr);
     const [firstHash, secondsHash] = privKeyToSha256HashSplitted(keyHexStr);
 
@@ -31,7 +33,8 @@ export class ZkpService {
       responseType: 'text',
       params: {
         keyParts: `${first} ${second}`,
-        hashParts: `${firstHash} ${secondsHash}`
+        hashParts: `${firstHash} ${secondsHash}`,
+        publicKey: new PrivateKey(privateKey.number, false, false, true).toPublicKey().toString()
       }
     })).finally(() => {
       this.processing$.next(false);
@@ -59,7 +62,7 @@ export class ZkpService {
     console.log(res);
   }
 
-  public async authorizeApp(appId: string) {
+  public async authorizeApp(appId: string): Promise<AuthStatus> {
     this.processing$.next(true);
     const res = await lastValueFrom(
       this.http.get(`${environment.verifierBackendHost}/authorize`, {
@@ -74,5 +77,6 @@ export class ZkpService {
       this.processing$.next(false);
     })
     console.log(res);
+    return res as AuthStatus;
   }
 }

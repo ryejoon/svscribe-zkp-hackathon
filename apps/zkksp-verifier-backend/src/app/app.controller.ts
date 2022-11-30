@@ -6,6 +6,7 @@ import {BlockchainService, UsedUtxoMap} from "./blockchain/blockchain.service";
 import {DbService, generateRandomAlphanumeric} from "./db/db.service";
 import {PublicKey, Transaction} from "@runonbitcoin/nimble";
 import {isUnused, toUtxoKey} from "./utils";
+import {AuthStatus} from "@zkp-hackathon/common";
 
 type RegisterPayload = {
   publicKey: string,
@@ -28,50 +29,60 @@ export class AppController {
   @Post("register")
   async register(@Body() payload: RegisterPayload) {
     const publicKey = payload.publicKey;
-    fs.writeFileSync(`${environment.zokratesDir}/${publicKey}.json`, JSON.stringify(payload.proof));
-
-    const stdOut = await new Promise((resolve, reject) => {
-      let stdOutTemp: string;
-      const command = `${environment.zokratesCmdPath} verify-key-proof -p ${publicKey} -j ${publicKey}.json`;
-      console.log(`running command: ${command}`)
-      const process = exec(command, execOptions, (error, stdout, stderr) => {
-        if (error) {
-          console.log(stdout, error);
-          return;
-        }
-        if (stderr) {
-          console.log(stdout, stderr);
-          return;
-        }
-        stdOutTemp = stdout;
-        console.log(`stdout: ${stdout}`);
-      }).on('exit', () => {
-        setTimeout(() => {
-          if (stdOutTemp.includes("does not hash to ")) {
-            resolve(false);
-          } else if (stdOutTemp.includes("hashes to ")) {
-            resolve(true);
-          } else {
-            resolve(false);
-          }
-        }, 1000);
-      })
-    })
-
-    if (stdOut) {
-      const token = generateRandomAlphanumeric(30);
-      await this.db.insertToken({
-        token: token,
-        publicKey
-      });
+    const file = `${environment.zokratesDir}/verifier/${publicKey}.json`;
+    if (fs.existsSync(file)) {
+      // already registered
+      const tkns = await this.db.scanTokens();
+      const item = tkns.find(t => t.publicKey === publicKey);
       return {
-        token,
-        stdOut
+        token: item.token
+      };
+    } else {
+      fs.writeFileSync(file, JSON.stringify(payload.proof));
+
+      const stdOut = await new Promise((resolve, reject) => {
+        let stdOutTemp: string;
+        const command = `${environment.zokratesCmdPath} verify-key-proof -p ${publicKey} -j verifier/${publicKey}.json`;
+        console.log(`running command: ${command}`)
+        const process = exec(command, execOptions, (error, stdout, stderr) => {
+          if (error) {
+            console.log(stdout, error);
+            return;
+          }
+          if (stderr) {
+            console.log(stdout, stderr);
+            return;
+          }
+          stdOutTemp = stdout;
+          console.log(`stdout: ${stdout}`);
+        }).on('exit', () => {
+          setTimeout(() => {
+            if (stdOutTemp.includes("does not hash to ")) {
+              resolve(false);
+            } else if (stdOutTemp.includes("hashes to ")) {
+              resolve(true);
+            } else {
+              resolve(false);
+            }
+          }, 1000);
+        })
+      })
+
+      if (stdOut) {
+        const token = generateRandomAlphanumeric(30);
+        await this.db.insertToken({
+          token: token,
+          publicKey
+        });
+        return {
+          token,
+          stdOut
+        }
       }
+      return {
+        stdOut
+      };
     }
-    return {
-      stdOut
-    };
   }
 
   @Get("apps")
@@ -80,7 +91,7 @@ export class AppController {
   }
 
   @Get("authorize")
-  async authorize(@Headers() headers, @Query() query) {
+  async authorize(@Headers() headers, @Query() query): Promise<AuthStatus> {
     const authHeader: string = headers['authorization'];
     const token = authHeader.split(' ')[1];
     const tokenItem = await this.db.queryTokenItem(token);
@@ -155,7 +166,7 @@ export class AppController {
     console.log(msg);
     return {
       authorized: false,
-      message: msg
+      reason: msg
     };
   }
 }

@@ -116,8 +116,22 @@ export class DbService implements OnModuleInit {
 
   async scanApps() {
     return this.docClient.scan({
-      TableName
+      TableName,
+      FilterExpression: "begins_with(pk, :prefix)",
+      ExpressionAttributeValues: {
+        ':prefix': "app#"
+      }
     }).promise().then(r => r.Items);
+  }
+
+  async scanTokens(): Promise<TokenItem[]> {
+    return this.docClient.scan({
+      TableName,
+      FilterExpression: "begins_with(pk, :prefix)",
+      ExpressionAttributeValues: {
+        ':prefix': "tkn#"
+      }
+    }).promise().then(r => r.Items as TokenItem[]);
   }
 
   async queryApp(appId: string): Promise<App> {
