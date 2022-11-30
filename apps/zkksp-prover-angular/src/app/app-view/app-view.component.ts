@@ -25,11 +25,9 @@ import {ZkpService} from "../service/zkp.service";
             </div>
           </div>
           <div fxFlex="50" fxLayout="row" fxLayoutAlign="space-evenly">
-            <button (click)="pay()" *ngIf="!context.processing"
-                    [disabled]="!context.key">Pay
+            <button (click)="pay()" [disabled]="!context.key || context.processing">Pay
             </button>
-            <button (click)="checkAuth()" *ngIf="!context.processing"
-                    [disabled]="!context.token">Check Auth</button>
+            <button (click)="checkAuth()" [disabled]="!context.token || context.processing">Check Auth</button>
           </div>
         </div>
         <div *ngIf="context.auth && context.remaining >= 0" fxLayout="row">
@@ -82,8 +80,9 @@ export class AppViewComponent {
 
   async pay() {
     this.walletService.paymentProcessing$.next(true);
-    await this.walletService.pay(this.app.paymentAddress, this.app.priceSatoshis);
-    this.walletService.paymentProcessing$.next(false);
+    await this.walletService.pay(this.app.paymentAddress, this.app.priceSatoshis)
+      .then(r => console.log(r))
+      .finally(() => this.walletService.paymentProcessing$.next(false));
   }
 
   async checkAuth() {

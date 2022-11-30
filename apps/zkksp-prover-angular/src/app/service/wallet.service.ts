@@ -7,6 +7,7 @@ import Transaction = classes.Transaction;
 import {AxiosResponse} from "axios";
 
 const { P2PKH, OpReturn } = casts
+const AVG_FEE = 50;
 
 @Injectable({
   providedIn: 'root'
@@ -34,28 +35,46 @@ export class WalletService {
 
     const axiosResponse = await this.wocClient.getUnspentTransactions(fromAddress);
     const utxos = axiosResponse.data;
-    const targetUtxo = utxos[0];
-    const utxoTxRaw = (await this.wocClient.getTransactionRaw(targetUtxo.tx_hash)).data;
-    const utxoTx = Transaction.fromHex(utxoTxRaw);
 
-    const utxo = toUTXO({
-      txid: targetUtxo.tx_hash,       // utxo transaction id
-      vout: targetUtxo.tx_pos,       // utxo output index
-      satoshis: targetUtxo.value,   // utxo amount
-      script: utxoTx.outputs[targetUtxo.tx_pos].script.toHex()      // utxo lock script
-    })
+    const targetUtxos = [];
+    let sum = 0;
+    const targetAmount = amountSatoshis + AVG_FEE;
+    for (const utxo of utxos) {
+      sum += utxo.value;
+      targetUtxos.push(utxo);
+      if (sum > targetAmount) {
+        break;
+      }
+    }
+    if (sum < targetAmount) {
+      throw new Error(`Not enough balance for address ${fromAddress}. has ${sum}, required ${targetAmount}`);
+    }
+
+    const utxoTxRaws = await Promise.all(
+      targetUtxos.map(u => this.wocClient.getTransactionRaw(u.tx_hash)))
+      .then(r => r.map(rr => rr.data));
+    const utxoTxs: { [key: string] : Transaction } = utxoTxRaws.map(raw => Transaction.fromHex(raw))
+      .reduce((map, current) => { map[current.hash] = current; return map; }, {});
+
+    const utxoInputs = targetUtxos.map(u => toUTXO({
+      txid: u.tx_hash,       // utxo transaction id
+      vout: u.tx_pos,       // utxo output index
+      satoshis: u.value,   // utxo amount
+      script: utxoTxs[u.tx_hash].outputs[u.tx_pos].script.toHex()      // utxo lock script
+    }));
 
 // Forge a transaction
-    const tx = forgeTx({
-      inputs: [
-        P2PKH.unlock(utxo, { privkey: privateKey })
-      ],
+    const input = {
+      inputs: utxoInputs.map(u => P2PKH.unlock(u, { privkey: privateKey })),
       outputs: [
         P2PKH.lock(amountSatoshis, { address: targetAddress })
       ],
       change: { address: fromAddress }
-    })
-
+    };
+    const tx = forgeTx(input)
+    console.log(utxoInputs);
+    console.log(input);
+    console.log(tx);
     const hexTx = tx.toHex();
     console.log(hexTx)
     return this.wocClient.putTransaction(hexTx)
