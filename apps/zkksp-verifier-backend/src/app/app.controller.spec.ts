@@ -52,7 +52,7 @@ describe('AppController', () => {
     beforeEach(async () => {
       const db = app.get<DbService>(DbService);
       const result = await db.insertApp({
-        name: "testApp'",
+        name: "testApp",
         description: "testDesc",
         durationSeconds: 60,
         priceSatoshis: 600,

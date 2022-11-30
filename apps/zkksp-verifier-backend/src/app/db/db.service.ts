@@ -89,19 +89,6 @@ export class DbService implements OnModuleInit {
     }).promise().then(() => payment);
   }
 
-  async insertSpentUtxo(publicKey: string, txid: string, outputIdx: number) {
-    return this.docClient.put({
-      TableName,
-      Item: {
-        pk: `spt#${publicKey}`,
-        sk: `${txid}_${outputIdx.toString(10)}`,
-        publicKey,
-        txid,
-        outputIdx
-      }
-    }).promise();
-  }
-
   async insertToken(input: TokenItem) {
     const token: TokenItem = {
       ...input
@@ -160,11 +147,15 @@ export class DbService implements OnModuleInit {
     return vals[0] as TokenItem;
   }
 
-  async queryPaymentPeriods(publicKey: string): Promise<PaymentPeriod[]> {
+  async queryPaymentPeriods(publicKey: string, appId: string): Promise<PaymentPeriod[]> {
     const res = await this.docClient.query({
       TableName,
       KeyConditionExpression: "pk = :pk",
-      ExpressionAttributeValues: { ':pk': `pmt#${publicKey}` }
+      FilterExpression: "appId = :appId",
+      ExpressionAttributeValues: {
+        ':pk': `pmt#${publicKey}`,
+        ':appId': appId
+      }
     }).promise();
     const vals = Object.values(res.Items);
     return vals as PaymentPeriod[];

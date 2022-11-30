@@ -99,7 +99,13 @@ export class AppController {
       throw new Error(`Invalid Token ${token}`);
     }
 
-    const pr = await this.db.queryPaymentPeriods(tokenItem.publicKey);
+    const appId = query['appId'];
+    const app = await this.db.queryApp(appId);
+    if (!app) {
+      throw new Error(`app with id ${appId} not found`);
+    }
+
+    const pr = await this.db.queryPaymentPeriods(tokenItem.publicKey, appId);
     const start = Date.now();
     const now = start;
 
@@ -112,8 +118,6 @@ export class AppController {
         end: targetPeriod.end
       };
     }
-    const appId = query['appId'];
-    const app = await this.db.queryApp(appId);
 
     // lookup blockchain
     const payerAddress = PublicKey.from(tokenItem.publicKey).toAddress().toString();

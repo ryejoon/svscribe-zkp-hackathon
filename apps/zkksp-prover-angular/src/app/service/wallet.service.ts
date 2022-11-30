@@ -12,6 +12,7 @@ const { P2PKH, OpReturn } = casts
   providedIn: 'root'
 })
 export class WalletService {
+  public paymentProcessing$ = new BehaviorSubject(false);
   public privateKey$ = new BehaviorSubject<PrivateKey>(null);
   public address$ = this.privateKey$.pipe(
     filter(pk => pk != null),

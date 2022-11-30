@@ -7,39 +7,62 @@ import {ZkpService} from "../service/zkp.service";
 @Component({
   selector: 'app-view',
   template: `
-    <div fxLayout="column" class="outer">
-      <div>{{app.name}}</div>
-      <div>{{app.description}}</div>
-      <div>{{app.priceSatoshis}} satoshi for {{app.durationSeconds}} seconds</div>
-      <ng-container *ngIf="{processing: paymentProcessing$ | async} as context">
-        <button (click)="pay()" *ngIf="!context.processing">Pay</button>
-        <mat-progress-bar mode="indeterminate" *ngIf="context.processing"></mat-progress-bar>
-
-        <button (click)="checkAuth()" *ngIf="!context.processing">Check Auth</button>
-        {{_remainingTime$ | async}}
-      </ng-container>
-      <ng-container *ngIf="authStatus | async as status">
-        <div *ngIf="status.authorized" fxLayout="column">
-          <div>Authorized</div>
+    <div fxLayout="column">
+      <ng-container *ngIf="{
+        processing: walletService.paymentProcessing$ | async,
+        key: walletService.privateKey$ | async,
+        token: zkpService.token$ | async,
+        remaining: (_remainingTime$ | async) / 1000,
+        auth: authStatus$ | async
+      } as context">
+        <div fxLayout="row">
+          <div fxFlex="50" fxLayout="column">
+            <div class="subtitle">{{app.name}}</div>
+            <div class="title-box">
+              <div>{{app.description}}</div>
+              <div>{{app.appId}}</div>
+              <div class="gray">{{app.priceSatoshis}} satoshi for {{app.durationSeconds}} seconds</div>
+            </div>
+          </div>
+          <div fxFlex="50" fxLayout="row" fxLayoutAlign="space-evenly">
+            <button (click)="pay()" *ngIf="!context.processing"
+                    [disabled]="!context.key">Pay
+            </button>
+            <button (click)="checkAuth()" *ngIf="!context.processing"
+                    [disabled]="!context.token">Check Auth</button>
+          </div>
         </div>
-        <div *ngIf="!status.authorized" fxLayout="column">
-          <div>Unauthorized: {{status.reason}}</div>
+        <div *ngIf="context.auth && context.remaining >= 0" fxLayout="row">
+          <div class="green">Authorized : </div>
+          <div class="gray">{{context.remaining | number: '1.0-0'}} seconds remaining</div>
+        </div>
+        <div *ngIf="context.token && context.auth && !context.auth.authorized" fxLayout="row">
+          <div class="red">Unauthorized : </div>
+          <div class="gray">{{context.auth?.reason}}</div>
         </div>
       </ng-container>
     </div> `,
+  styleUrls: ['../common.scss'],
   styles: [`
     .outer {
       padding: 10px
     }
+    .green {
+      color: green
+    }
+    .red {
+      color: red
+    }
+    .gray {
+      color: darkgray
+    }
   `],
 })
 export class AppViewComponent {
-  public paymentProcessing$ = new BehaviorSubject(false);
-
-  public authStatus = new BehaviorSubject<AuthStatus>(null);
+  public authStatus$ = new BehaviorSubject<AuthStatus>(null);
   public _remainingTime$ = combineLatest([
     timer(0, 1000),
-    this.authStatus.asObservable()
+    this.authStatus$.asObservable()
   ]).pipe(
     filter(([time, auth]) => auth != null),
     map(
@@ -50,21 +73,21 @@ export class AppViewComponent {
   );
 
   constructor(
-    private walletService: WalletService,
-    private zkpService: ZkpService
+    public walletService: WalletService,
+    public zkpService: ZkpService
   ) {
   }
 
   @Input() app: App;
 
   async pay() {
-    this.paymentProcessing$.next(true);
+    this.walletService.paymentProcessing$.next(true);
     await this.walletService.pay(this.app.paymentAddress, this.app.priceSatoshis);
-    this.paymentProcessing$.next(false);
+    this.walletService.paymentProcessing$.next(false);
   }
 
   async checkAuth() {
     const res: AuthStatus = await this.zkpService.authorizeApp(this.app.appId)
-    this.authStatus.next(res);
+    this.authStatus$.next(res);
   }
 }

@@ -19,7 +19,7 @@ export class ZkpService {
   }
 
   public processing$ = new BehaviorSubject(false);
-  public output = new BehaviorSubject(null);
+  public output$ = new BehaviorSubject(null);
   public token$ = new BehaviorSubject(null);
 
   public async generateZkp() {
@@ -40,7 +40,7 @@ export class ZkpService {
       this.processing$.next(false);
     })
     console.log(res);
-    this.output.next(res);
+    this.output$.next(res);
     return res;
   }
 
