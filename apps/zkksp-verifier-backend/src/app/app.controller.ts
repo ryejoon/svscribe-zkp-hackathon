@@ -2,9 +2,10 @@ import {Body, Controller, Get, Headers, Post, Query} from '@nestjs/common';
 import {exec} from "child_process";
 import * as fs from "fs";
 import {environment} from '../environments/environment';
-import {BlockchainService} from "./blockchain/blockchain.service";
+import {BlockchainService, UsedUtxoMap} from "./blockchain/blockchain.service";
 import {DbService, generateRandomAlphanumeric} from "./db/db.service";
-import {P2PKHLockScript, PublicKey, Transaction} from "@runonbitcoin/nimble";
+import {PublicKey, Transaction} from "@runonbitcoin/nimble";
+import {isUnused, toUtxoKey} from "./utils";
 
 type RegisterPayload = {
   publicKey: string,
@@ -105,7 +106,11 @@ export class AppController {
 
     // lookup blockchain
     const payerAddress = PublicKey.from(tokenItem.publicKey).toAddress().toString();
-    const txRaw = await this.blockchainService.fetchTxsAndFilterFirst(app.paymentAddress, payerAddress, false);
+
+    const utxos = await this.db.queryUsedUtxos(tokenItem.publicKey);
+    const usedUtxoMap: UsedUtxoMap = utxos.reduce((map, current) => { map[toUtxoKey(current.txid, current.outputIdx)] = current; return map; }, {});
+
+    const txRaw = await this.blockchainService.fetchTxsAndFilterFirst(payerAddress, app.paymentAddress, usedUtxoMap, false);
     if (!txRaw) {
       return {
         authorized: false,
@@ -113,24 +118,33 @@ export class AppController {
       };
     }
     const tx = Transaction.fromHex(txRaw);
-    const paymentOutput = tx.outputs.find(o => {
-      if (o.script['toAddress']) {
-        return app.paymentAddress === (o.script as P2PKHLockScript).toAddress().toString();
-      }
-      return false;
-    })
+
+
+    const paymentOutput = tx.outputs.find(o => isUnused(o, app.paymentAddress, usedUtxoMap));
     // todo: need to bypass if already consumed period
     if (paymentOutput.satoshis >= app.priceSatoshis) {
       // valid
       console.log(`Starting period for app ${app.appId} with payment ${tx.hash}`);
       const end = start + (app.durationSeconds * 1000);
-      await this.db.insertPayment({
-        appId: app.appId,
-        start: start,
-        end,
-        txid: tx.hash,
-        publicKey: tokenItem.publicKey
-      });
+      try {
+        await this.db.insertPayment({
+          appId: app.appId,
+          start: start,
+          end,
+          txid: tx.hash,
+          publicKey: tokenItem.publicKey
+        }, {
+          publicKey: tokenItem.publicKey,
+          txid: paymentOutput.txid,
+          outputIdx: paymentOutput.vout
+        });
+      } catch (err) {
+        console.error(err);
+        return {
+          authorized: false,
+          reason: "already spent utxo "
+        }
+      }
       return {
         authorized: true,
         start,

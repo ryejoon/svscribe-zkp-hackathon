@@ -19,7 +19,7 @@ export class ZkpService {
 
   public processing$ = new BehaviorSubject(false);
   public output = new BehaviorSubject(null);
-  public token$ = new BehaviorSubject("87px30cr7ev2lf558ngr5lk5nmedsd");
+  public token$ = new BehaviorSubject(null);
 
   public async generateZkp() {
     this.processing$.next(true);

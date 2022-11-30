@@ -1,8 +1,11 @@
 import {Injectable, OnModuleInit} from '@nestjs/common';
-import {WhatsOnChainClient} from "@zkp-hackathon/common";
+import {Utxo, WhatsOnChainClient} from "@zkp-hackathon/common";
 import {Br, OpCode, Tx, TxIn} from "@ts-bitcoin/core";
-import {classes} from "@runonbitcoin/nimble";
+import {classes, Transaction} from "@runonbitcoin/nimble";
 import PublicKey = classes.PublicKey;
+import {isUnused} from "../utils";
+
+export type UsedUtxoMap = { [p: string]: Utxo };
 
 @Injectable()
 export class BlockchainService implements OnModuleInit {
@@ -14,7 +17,7 @@ export class BlockchainService implements OnModuleInit {
     this.wocClient.getBlockChainInfo().then(r => console.log(r.data));
   }
 
-  async fetchTxsAndFilterFirst(receiveAddress: string, sentAddress: string, heightAscend: boolean): Promise<string> {
+  async fetchTxsAndFilterFirst(sentAddress: string, receiveAddress: string, usedUtxoMap: UsedUtxoMap, heightAscend: boolean): Promise<string> {
     const history = await this.wocClient.getHistory(receiveAddress);
     const data = history.data.sort((a, b) => heightAscend ? a.height - b.height : b.height - a.height);
 
@@ -24,7 +27,12 @@ export class BlockchainService implements OnModuleInit {
       const resp = await this.wocClient.getTransactionRaw(hist.tx_hash);
       const rawTx = resp.data;
       const tx = Tx.fromBr(new Br(Buffer.from(rawTx, "hex")));
-      if (tx.txIns.find(tin => isP2PKHfromAddress(tin, sentAddress))) {
+      const txNimble = Transaction.fromHex(rawTx);
+      if (tx.txIns.find(tin => isP2PKHfromAddress(tin, sentAddress) &&
+          tx.txOuts.find((o, idx) => {
+            return isUnused(txNimble.outputs[idx], receiveAddress, usedUtxoMap);
+          }))
+      ) {
         return rawTx;
       }
     }

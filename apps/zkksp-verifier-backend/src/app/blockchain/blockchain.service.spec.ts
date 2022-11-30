@@ -13,7 +13,8 @@ describe('BlockchainService', () => {
   });
 
   it('should be defined', async () => {
-    const txs = await service.fetchTxsAndFilterFirst("16E2tWHx6sXLhQqqnoE1uiyQBAL8E63jmK", "1FM8ei1kvA1TGfJQabRpFy8ZbAcAN1yrZm", false);
+    const usedUtxoMap = {};
+    const txs = await service.fetchTxsAndFilterFirst("1FM8ei1kvA1TGfJQabRpFy8ZbAcAN1yrZm", "16E2tWHx6sXLhQqqnoE1uiyQBAL8E63jmK", usedUtxoMap, false);
     console.log(txs);
   });
 });

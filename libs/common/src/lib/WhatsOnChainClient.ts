@@ -84,9 +84,10 @@ export class WhatsOnChainClient {
     );
   }
 
-  getUnspentTransactions(address: string) {
+  // fromAddress
+  getUnspentTransactions(fromAddress: string) {
     return this.axiosInstance.get<WhatsOnChainUtxo[]>(
-      `${this.serviceConfig.network}/address/${address}/unspent`,
+      `${this.serviceConfig.network}/address/${fromAddress}/unspent`,
       this._axiosRequestConfig
     );
   }

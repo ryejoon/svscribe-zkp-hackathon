@@ -12,6 +12,12 @@ export type PaymentPeriod = {
   sequence?: number;
 }
 
+export type Utxo = {
+  publicKey: string;
+  txid: string;
+  outputIdx: number;
+}
+
 export type AppCreateInput = {
   name: string;
   description: string;

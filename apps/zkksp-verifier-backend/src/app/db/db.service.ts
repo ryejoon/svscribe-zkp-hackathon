@@ -2,11 +2,11 @@ import {Injectable, OnModuleInit} from '@nestjs/common';
 import {DocumentClient} from "aws-sdk/clients/dynamodb";
 import {environment} from "../../environments/environment";
 import {BillingMode, DynamoDB, KeyType, ScalarAttributeType} from "@aws-sdk/client-dynamodb";
-import {App, AppCreateInput, PaymentPeriod, TokenItem} from "@zkp-hackathon/common";
+import {App, AppCreateInput, PaymentPeriod, TokenItem, Utxo} from "@zkp-hackathon/common";
 import {classes} from "@runonbitcoin/nimble";
 import PrivateKey = classes.PrivateKey;
 
-const tableName = "zkp-svscribe";
+const TableName = "zkp-svscribe";
 
 @Injectable()
 export class DbService implements OnModuleInit {
@@ -21,7 +21,7 @@ export class DbService implements OnModuleInit {
 
   async onModuleInit() {
     await this.dbClient.createTable({
-      TableName: tableName,
+      TableName,
       AttributeDefinitions: [{
         AttributeName: "pk",
         AttributeType: ScalarAttributeType.S
@@ -56,21 +56,50 @@ export class DbService implements OnModuleInit {
     app['sk'] = app.paymentAddress;
 
     return this.docClient.put({
-      TableName: tableName,
+      TableName,
       Item: app
     }).promise().then(() => app);
   }
 
-  async insertPayment(input: PaymentPeriod) {
+  async insertPayment(input: PaymentPeriod, spendingUtxo: Utxo) {
     const payment: PaymentPeriod = {
       ...input
     };
     payment['pk'] = `pmt#${input.publicKey}`;
     payment['sk'] = input.txid;
-    return this.docClient.put({
-      TableName: tableName,
-      Item: payment
+    return this.docClient.transactWrite({
+      TransactItems: [
+        {
+          Put: {
+            TableName,
+            Item: payment
+          }
+        },
+        {
+          Put: {
+            TableName,
+            Item: {
+              pk: `spt#${spendingUtxo.publicKey}`,
+              sk: `${spendingUtxo.txid}_${spendingUtxo.outputIdx}`,
+              ...spendingUtxo
+            }
+          }
+        }
+      ]
     }).promise().then(() => payment);
+  }
+
+  async insertSpentUtxo(publicKey: string, txid: string, outputIdx: number) {
+    return this.docClient.put({
+      TableName,
+      Item: {
+        pk: `spt#${publicKey}`,
+        sk: `${txid}_${outputIdx.toString(10)}`,
+        publicKey,
+        txid,
+        outputIdx
+      }
+    }).promise();
   }
 
   async insertToken(input: TokenItem) {
@@ -80,20 +109,20 @@ export class DbService implements OnModuleInit {
     token['pk'] = `tkn#${token.token}`;
     token['sk'] = token.publicKey;
     return this.docClient.put({
-      TableName: tableName,
+      TableName,
       Item: token
     }).promise().then(() => token);
   }
 
   async scanApps() {
     return this.docClient.scan({
-      TableName: tableName
+      TableName
     }).promise().then(r => r.Items);
   }
 
   async queryApp(appId: string): Promise<App> {
     const res = await this.docClient.query({
-      TableName: tableName,
+      TableName,
       KeyConditionExpression: "pk = :pk",
       ExpressionAttributeValues: {
         ":pk": `app#${appId}`
@@ -106,7 +135,7 @@ export class DbService implements OnModuleInit {
 
   async queryTokenItem(token: string): Promise<TokenItem> {
     const res = await this.docClient.query({
-      TableName: tableName,
+      TableName,
       KeyConditionExpression: "pk = :pk",
       ExpressionAttributeValues: {
         ":pk": `tkn#${token}`
@@ -119,12 +148,20 @@ export class DbService implements OnModuleInit {
 
   async queryPaymentPeriods(publicKey: string): Promise<PaymentPeriod[]> {
     const res = await this.docClient.query({
-      TableName: tableName,
+      TableName,
       KeyConditionExpression: "pk = :pk",
       ExpressionAttributeValues: { ':pk': `pmt#${publicKey}` }
     }).promise();
     const vals = Object.values(res.Items);
     return vals as PaymentPeriod[];
+  }
+
+  async queryUsedUtxos(publicKey: string): Promise<Utxo[]> {
+    return this.docClient.query({
+      TableName,
+      KeyConditionExpression: "pk = :pk",
+      ExpressionAttributeValues: { ':pk': `spt#${publicKey}` }
+    }).promise().then(r => r.Items as Utxo[]);
   }
 }
 
