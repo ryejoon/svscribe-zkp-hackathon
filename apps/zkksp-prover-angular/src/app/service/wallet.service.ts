@@ -5,6 +5,7 @@ import {WhatsOnChainBalance, WhatsOnChainClient} from "@zkp-hackathon/common";
 import {casts, forgeTx, toUTXO} from 'txforge'
 import Transaction = classes.Transaction;
 import {AxiosResponse} from "axios";
+import {ConsoleService} from "./console.service";
 
 const { P2PKH, OpReturn } = casts
 const AVG_FEE = 50;
@@ -13,6 +14,10 @@ const AVG_FEE = 50;
   providedIn: 'root'
 })
 export class WalletService {
+
+  constructor(private console: ConsoleService) {
+  }
+
   public paymentProcessing$ = new BehaviorSubject(false);
   public privateKey$ = new BehaviorSubject<PrivateKey>(null);
   public address$ = this.privateKey$.pipe(
@@ -30,6 +35,7 @@ export class WalletService {
   private wocClient = new WhatsOnChainClient({ responseType: "json" }, { network: "main" });
 
   async pay(targetAddress: string, amountSatoshis: number) {
+    this.console.addMessage(`paying ${amountSatoshis} satoshi to ${targetAddress}...`);
     const privateKey = this.privateKey$.value;
     const fromAddress = privateKey.toAddress().toString();
 
@@ -47,7 +53,9 @@ export class WalletService {
       }
     }
     if (sum < targetAmount) {
-      throw new Error(`Not enough balance for address ${fromAddress}. has ${sum}, required ${targetAmount}`);
+      const message = `not enough balance for address ${fromAddress}. has ${sum}, required ${targetAmount}`;
+      this.console.addMessage(message, 'error');
+      throw new Error(message);
     }
 
     const utxoTxRaws = await Promise.all(
@@ -72,12 +80,16 @@ export class WalletService {
       change: { address: fromAddress }
     };
     const tx = forgeTx(input)
-    console.log(utxoInputs);
-    console.log(input);
-    console.log(tx);
     const hexTx = tx.toHex();
-    console.log(hexTx)
     return this.wocClient.putTransaction(hexTx)
+      .then(r => {
+        this.console.addMessage(`payment succeeded : ${r.data}`);
+        return r;
+      })
+      .catch(err => {
+        this.console.addMessage(`payment failed : ${err.message}`, 'error');
+        throw err;
+      })
       .finally(() => setTimeout(() =>this.needsRefresh$.next(true), 1500));
   }
 

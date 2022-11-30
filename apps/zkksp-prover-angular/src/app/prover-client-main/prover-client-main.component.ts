@@ -7,6 +7,7 @@ import {App} from "@zkp-hackathon/common";
 import {SensiletService} from "../service/sensilet.service";
 import {WalletService} from "../service/wallet.service";
 import {ZkpService} from "../service/zkp.service";
+import {ConsoleService} from "../service/console.service";
 
 @Component({
   selector: 'prover-client-main',
@@ -58,7 +59,7 @@ import {ZkpService} from "../service/zkp.service";
               <button (click)="zkpService.registerSubmitZkp()">Register Svscribe (submit ZKP)</button>
             </div>
           </div>
-          <pre>{{zkpService.output$ | async}}</pre>
+          <console-view></console-view>
         </div>
         <div fxLayout="column" fxFlex="50" fxLayoutAlign="start">
           <app-view *ngFor="let app of apps$ | async" [app]="app">
@@ -82,7 +83,8 @@ export class ProverClientMainComponent {
     private http: HttpClient,
     private sensiletService: SensiletService,
     public walletService: WalletService,
-    public zkpService: ZkpService
+    public zkpService: ZkpService,
+    private console: ConsoleService
   ) {
   }
 
@@ -107,10 +109,13 @@ export class ProverClientMainComponent {
         amount: 1000
       }],
       broadcast: true
-    }).finally(() => setTimeout(() => {
+    })
+      .catch(err => { this.console.addMessage(err.message, "error"); throw err; })
+      .finally(() => setTimeout(() => {
       this.walletService.needsRefresh$.next(true);
       this.processing$.next(false);
     }, 3000))
+    this.console.addMessage(`charge 1000 satoshi for ${address} succeed`);
   }
 
   importKey() {

@@ -6,6 +6,7 @@ import {WalletService} from "./wallet.service";
 import {HttpClient} from "@angular/common/http";
 import {PrivateKey} from "@runonbitcoin/nimble";
 import {AuthStatus} from "@zkp-hackathon/common";
+import {ConsoleService} from "./console.service";
 
 @Injectable({
   providedIn: 'root'
@@ -14,12 +15,12 @@ export class ZkpService {
 
   constructor(
     private http: HttpClient,
-    private walletService: WalletService
+    private walletService: WalletService,
+    private console: ConsoleService
   ) {
   }
 
   public processing$ = new BehaviorSubject(false);
-  public output$ = new BehaviorSubject(null);
   public token$ = new BehaviorSubject(null);
 
   public async generateZkp() {
@@ -38,9 +39,8 @@ export class ZkpService {
       }
     })).finally(() => {
       this.processing$.next(false);
-    })
-    console.log(res);
-    this.output$.next(res);
+    });
+    this.console.addMessage(res);
     return res;
   }
 
@@ -48,15 +48,19 @@ export class ZkpService {
     this.processing$.next(true);
     const pk = this.walletService.privateKey$;
     const pkUncompressed = new PrivateKey(pk.value.number, false, false, true);
+    const proverBackend = `${environment.proverBackendHost}/registerProof`;
+    this.console.addMessage(`submitting Zero-Knowledge Proof file to Svscribe...`);
     const res = await lastValueFrom(
-      this.http.post(`${environment.proverBackendHost}/registerProof`, {
+      this.http.post(proverBackend, {
         publicKey: pkUncompressed.toPublicKey().toString()
     })
-    ).finally(() => {
+    ).catch(err => this.console.addMessage(`${err.message}`, "error"))
+      .finally(() => {
       this.processing$.next(false);
     })
     const token = res['token'];
     if (token) {
+      this.console.addMessage(`submitting Zero-Knowledge Proof to Svscribe succeed. Received auth token ${token}`);
       this.token$.next(token);
     }
     console.log(res);
@@ -64,19 +68,26 @@ export class ZkpService {
 
   public async authorizeApp(appId: string): Promise<AuthStatus> {
     this.processing$.next(true);
-    const res = await lastValueFrom(
+    const token = this.token$.value;
+    this.console.addMessage(`checking auth for app ${appId} with token ${token}`);
+    const res: AuthStatus = await lastValueFrom(
       this.http.get(`${environment.verifierBackendHost}/authorize`, {
         headers: {
-          authorization: `Bearer ${this.token$.value}`
+          authorization: `Bearer ${token}`
         },
         params: {
           appId
         }
       })
-    ).finally(() => {
+    )
+      .catch(err => {
+        this.console.addMessage(`Auth request to app ${appId} failed : ${err.message}`, 'error');
+        throw err;
+      })
+      .finally(() => {
       this.processing$.next(false);
-    })
-    console.log(res);
-    return res as AuthStatus;
+    }) as AuthStatus;
+    this.console.addMessage(`authorized for app ${appId} : ${res.authorized}`, res.authorized ? 'log' : 'error');
+    return res;
   }
 }
