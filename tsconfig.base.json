@@ -16,7 +16,6 @@
     "baseUrl": ".",
     "paths": {
       "@zkp-hackathon/common": ["libs/common/src/index.ts"],
-      "@zkp-hackathon/todos": ["libs/todos/src/index.ts"],
       "txforge": ["@types/txforge"]
     }
   },

@@ -20,14 +20,16 @@ RUN npm install --production
 # dependencies that nestjs needs
 RUN npm install reflect-metadata tslib rxjs @nestjs/platform-express
 COPY zokrates/** ./
-RUN unzip zkksp-source.zip -d zkksp-source
+RUN wget https://github.com/sCrypt-Inc/zokrates/archive/33ec173c28a019d7993e328b61b99e4e65fc814d/key-statement-proof.zip -O key-statement-proof.zip
+RUN unzip key-statement-proof.zip -d zkksp-source
 # install rust
 RUN rustup toolchain install nightly-aarch64-unknown-linux-gnu
 # build zokrates
 WORKDIR /app/zkksp-source
 RUN mkdir /root/.zokrates
 RUN mkdir /root/.zokrates/stdlib
-RUN cp -r /app/zkksp-source/zokrates_stdlib/stdlib /root/.zokrates
+RUN cp -r /app/zkksp-source/zokrates-33ec173c28a019d7993e328b61b99e4e65fc814d/* /app/zkksp-source/
+RUN cp -r /app/zkksp-source/zokrates-33ec173c28a019d7993e328b61b99e4e65fc814d/zokrates_stdlib/stdlib /root/.zokrates
 # RUN export ZOKRATES_STDLIB=$PWD/zokrates_stdlib/stdlib
 RUN cargo +nightly build -p zokrates_cli --release
 RUN ln -s /app/zkksp-source/target/release/zokrates /app/zokrates
