@@ -52,23 +52,23 @@ describe('AppController', () => {
     beforeEach(async () => {
       const db = app.get<DbService>(DbService);
       const result = await db.insertApp({
-        name: "testApp",
-        description: "testDesc",
-        durationSeconds: 60,
-        priceSatoshis: 600,
+        name: "One Hour App",
+        description: "Subscribe for one hour!",
+        durationSeconds: 60 * 60,
+        priceSatoshis: 1000,
         privateKey: appWalletPk,
         paymentAddress: PrivateKey.from(appWalletPk).toAddress().toString()
       });
 
-      token = "testToken";
-      const publicKey = PrivateKey.from(subscriberPk).toPublicKey().toString();
-      await db.insertToken({
-        publicKey, token
-      });
-      appId = result.appId;
+      // token = "testToken";
+      // const publicKey = PrivateKey.from(subscriberPk).toPublicKey().toString();
+      // await db.insertToken({
+      //   publicKey, token
+      // });
+      // appId = result.appId;
     })
 
-    it("should fail for unpaid auth request", async () => {
+    it.skip("should fail for unpaid auth request", async () => {
       const appController = app.get<AppController>(AppController);
       const res = await appController.authorize({
         authorization: `Bearer ${token}`

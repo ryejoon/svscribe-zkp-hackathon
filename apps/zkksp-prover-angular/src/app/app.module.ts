@@ -12,6 +12,8 @@ import { AppViewComponent } from './app-view/app-view.component';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ConsoleViewComponent } from './console-view/console-view.component';
+import {MatButtonModule} from "@angular/material/button";
+import {MatInputModule} from "@angular/material/input";
 
 @NgModule({
   declarations: [
@@ -22,13 +24,15 @@ import { ConsoleViewComponent } from './console-view/console-view.component';
   ],
   imports: [
     BrowserModule,
-    RouterModule.forRoot(appRoutes, { initialNavigation: 'enabledBlocking' }),
+    RouterModule.forRoot(appRoutes, {initialNavigation: 'enabledBlocking'}),
     HttpClientModule,
     BrowserAnimationsModule,
     MatProgressSpinnerModule,
     FormsModule,
     FlexLayoutModule,
     MatProgressBarModule,
+    MatButtonModule,
+    MatInputModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

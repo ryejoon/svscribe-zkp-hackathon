@@ -25,29 +25,34 @@ export class AppController {
     const keyParts: string = query.keyParts;
     const hashParts: string = query.hashParts;
     const publicKey: string = query.publicKey;
+    const command = `${environment.zokratesCmdPath} compute-witness -a ${keyParts} ${hashParts}`;
+
+    const proofFile = `prover/${publicKey}.json`;
 
     const res = await new Promise((resolve, reject) => {
-      const command = `${environment.zokratesCmdPath} compute-witness -o prover/${publicKey}_witness -a ${keyParts} ${hashParts}`;
+      // currently -w option is not working in scrypt-zokrates and is only reading from 'witness' file
       console.log(command);
       exec(command, execOptions, (error, stdout, stderr) => {
         if (error) {
           console.error(error);
-          return;
+          reject(error);
         }
         if (stderr) {
-          console.error(stderr);
-          return;
+          reject(stderr);
         }
         console.log(`stdout: ${stdout}`);
-      }).on("exit", () => {
-        exec(`${environment.zokratesCmdPath} generate-key-proof -w prover/${publicKey}_witness --output prover/${publicKey}.json`, execOptions, (error, stdout, stderr) => {
+      }).on("exit", (code, signal) => {
+        console.log(code);
+        console.log(signal);
+        // currently -w option is not working in scrypt-zokrates and is only reading from 'witness' file
+        exec(`${environment.zokratesCmdPath} generate-key-proof --output ${proofFile}`, execOptions, (error, stdout, stderr) => {
           if (error) {
             console.log(`error: ${error.message}`);
-            return;
+            reject(error);
           }
           if (stderr) {
             console.log(`stderr: ${stderr}`);
-            return;
+            reject(stderr);
           }
           console.log(`stdout: ${stdout}`);
           resolve(stdout);
@@ -55,7 +60,11 @@ export class AppController {
       });
     });
 
-    return res;
+    return {
+      command,
+      proofFile,
+      messages: res
+    };
   }
 
   @Post("registerProof")

@@ -15,19 +15,18 @@ import {ZkpService} from "../service/zkp.service";
         remaining: (_remainingTime$ | async) / 1000,
         auth: authStatus$ | async
       } as context">
-        <div fxLayout="row">
-          <div fxFlex="50" fxLayout="column">
-            <div class="subtitle">{{app.name}}</div>
-            <div class="title-box">
+        <div>
+          <div class="subtitle">{{app.name}}</div>
+          <div fxLayout="row" class="title-box">
+            <div class="app" fxFlex="70" fxLayout="column">
               <div>{{app.description}}</div>
               <div>{{app.appId}}</div>
               <div class="gray">{{app.priceSatoshis}} satoshi for {{app.durationSeconds}} seconds</div>
             </div>
-          </div>
-          <div fxFlex="50" fxLayout="row" fxLayoutAlign="space-evenly">
-            <button (click)="pay()" [disabled]="!context.key || context.processing">Pay
-            </button>
-            <button (click)="checkAuth()" [disabled]="!context.token || context.processing">Check Auth</button>
+            <div fxFlex="20" fxLayout="column">
+              <button mat-stroked-button (click)="pay()" [disabled]="!context.key || context.processing">Pay</button>
+              <button mat-stroked-button (click)="checkAuth()" [disabled]="!context.token || context.processing">Check Auth</button>
+            </div>
           </div>
         </div>
         <div *ngIf="context.auth && context.remaining >= 0" fxLayout="row">

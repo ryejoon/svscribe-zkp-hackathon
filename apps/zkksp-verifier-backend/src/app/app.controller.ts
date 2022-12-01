@@ -26,8 +26,8 @@ export class AppController {
   ) {
   }
 
-  @Post("register")
-  async register(@Body() payload: RegisterPayload) {
+  @Post("revoke")
+  async revoke(@Body() payload: RegisterPayload) {
     const publicKey = payload.publicKey;
     const file = `${environment.zokratesDir}/verifier/${publicKey}.json`;
     if (fs.existsSync(file)) {
@@ -83,6 +83,58 @@ export class AppController {
         stdOut
       };
     }
+  }
+
+  @Post("register")
+  async register(@Body() payload: RegisterPayload) {
+    const publicKey = payload.publicKey;
+    const file = `${environment.zokratesDir}/verifier/${publicKey}.json`;
+    if (!fs.existsSync(file)) {
+      fs.writeFileSync(file, JSON.stringify(payload.proof));
+    }
+
+    const stdOut = await new Promise((resolve, reject) => {
+      let stdOutTemp: string;
+      const command = `${environment.zokratesCmdPath} verify-key-proof -p ${publicKey} -j verifier/${publicKey}.json`;
+      console.log(`running command: ${command}`)
+      const process = exec(command, execOptions, (error, stdout, stderr) => {
+        if (error) {
+          console.log(stdout, error);
+          return;
+        }
+        if (stderr) {
+          console.log(stdout, stderr);
+          return;
+        }
+        stdOutTemp = stdout;
+        console.log(`stdout: ${stdout}`);
+      }).on('exit', () => {
+        setTimeout(() => {
+          if (stdOutTemp.includes("does not hash to ")) {
+            resolve(false);
+          } else if (stdOutTemp.includes("hashes to ")) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        }, 1000);
+      })
+    })
+
+    if (stdOut) {
+      const token = generateRandomAlphanumeric(30);
+      await this.db.insertToken({
+        token: token,
+        publicKey
+      });
+      return {
+        token,
+        stdOut
+      }
+    }
+    return {
+      stdOut
+    };
   }
 
   @Get("apps")

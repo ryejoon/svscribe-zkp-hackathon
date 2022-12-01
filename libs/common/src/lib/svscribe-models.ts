@@ -42,3 +42,10 @@ export type AuthStatus = {
   end?: number,
   reason?: string
 }
+
+
+export type GenerateProofResponse = {
+  message: string,
+  proofFile: string,
+  command: string
+}

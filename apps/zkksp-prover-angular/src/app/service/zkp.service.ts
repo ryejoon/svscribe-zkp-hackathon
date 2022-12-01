@@ -5,7 +5,7 @@ import {environment} from "../../environments/environment";
 import {WalletService} from "./wallet.service";
 import {HttpClient} from "@angular/common/http";
 import {PrivateKey} from "@runonbitcoin/nimble";
-import {AuthStatus} from "@zkp-hackathon/common";
+import {AuthStatus, GenerateProofResponse} from "@zkp-hackathon/common";
 import {ConsoleService} from "./console.service";
 
 @Injectable({
@@ -20,6 +20,7 @@ export class ZkpService {
   ) {
   }
 
+  public proofGeneration$ = new BehaviorSubject<GenerateProofResponse>(null);
   public processing$ = new BehaviorSubject(false);
   public token$ = new BehaviorSubject(null);
 
@@ -30,17 +31,27 @@ export class ZkpService {
     const [first, second] = splitDecimal(keyHexStr);
     const [firstHash, secondsHash] = privKeyToSha256HashSplitted(keyHexStr);
 
-    const res = await lastValueFrom(this.http.get(`${environment.proverBackendHost}/generateProof`, {
-      responseType: 'text',
+    this.console.addMessage(`start generating zk-proof for your possession of the privateKey...`);
+    const res: GenerateProofResponse = await lastValueFrom(this.http.get(`${environment.proverBackendHost}/generateProof`, {
+      responseType: 'json',
       params: {
         keyParts: `${first} ${second}`,
         hashParts: `${firstHash} ${secondsHash}`,
         publicKey: new PrivateKey(privateKey.number, false, false, true).toPublicKey().toString()
       }
-    })).finally(() => {
+    }))
+      .catch(err => {
+        console.error(err);
+        this.console.addMessage(`generating zk-proof failed with status : ${err.status}`, 'error');
+        this.console.addMessage(err.message, 'error');
+        throw err;
+      })
+      .finally(() => {
       this.processing$.next(false);
-    });
-    this.console.addMessage(res);
+    }) as GenerateProofResponse;
+    this.console.addMessage(`zk-proof generation succeeded with command: ${res['command']}, written proof to ${res['proofFile']}`);
+    this.console.addMessage(res['message']);
+    this.proofGeneration$.next(res);
     return res;
   }
 
@@ -49,18 +60,22 @@ export class ZkpService {
     const pk = this.walletService.privateKey$;
     const pkUncompressed = new PrivateKey(pk.value.number, false, false, true);
     const proverBackend = `${environment.proverBackendHost}/registerProof`;
-    this.console.addMessage(`submitting Zero-Knowledge Proof file to Svscribe...`);
+    this.console.addMessage(`submitting your zk-proof file to Svscribe...`);
     const res = await lastValueFrom(
       this.http.post(proverBackend, {
         publicKey: pkUncompressed.toPublicKey().toString()
     })
-    ).catch(err => this.console.addMessage(`${err.message}`, "error"))
+    ).catch(err => {
+      this.console.addMessage(`submitting your zk-proof to Svscribe failed with status: ${err.status}`, "error");
+      this.console.addMessage(err.message, "error");
+      throw err;
+    })
       .finally(() => {
       this.processing$.next(false);
     })
     const token = res['token'];
     if (token) {
-      this.console.addMessage(`submitting Zero-Knowledge Proof to Svscribe succeed. Received auth token ${token}`);
+      this.console.addMessage(`submitting zk-proof to Svscribe succeed. Received auth token ${token}`);
       this.token$.next(token);
     }
     console.log(res);
@@ -81,7 +96,7 @@ export class ZkpService {
       })
     )
       .catch(err => {
-        this.console.addMessage(`Auth request to app ${appId} failed : ${err.message}`, 'error');
+        this.console.addMessage(`auth request to app ${appId} failed : ${err.message}`, 'error');
         throw err;
       })
       .finally(() => {

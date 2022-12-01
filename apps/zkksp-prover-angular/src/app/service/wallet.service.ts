@@ -16,10 +16,14 @@ const AVG_FEE = 50;
 export class WalletService {
 
   constructor(private console: ConsoleService) {
+    this.privateKey$
+      .pipe(filter(k => k != null))
+      .subscribe((key) => this.console.addMessage(`privateKey for address ${key.toAddress().toString()} loaded`))
   }
 
   public paymentProcessing$ = new BehaviorSubject(false);
   public privateKey$ = new BehaviorSubject<PrivateKey>(null);
+
   public address$ = this.privateKey$.pipe(
     filter(pk => pk != null),
     map(pk => pk.toAddress().toString())
