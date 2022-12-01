@@ -38,7 +38,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "nx build zkksp-prover-backend",
+          "nx build zkksp-prover-backend --c production",
           "docker build -f ./apps/zkksp-prover-backend/Dockerfile . -t zkksp-prover-backend"
         ],
         "parallel": false

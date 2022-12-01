@@ -32,7 +32,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "nx build zkksp-verifier-backend",
+          "nx build zkksp-verifier-backend --c production",
           "docker build -f ./apps/zkksp-verifier-backend/Dockerfile . -t zkksp-verifier-backend"
         ],
         "parallel": false

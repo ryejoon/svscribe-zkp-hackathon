@@ -68,7 +68,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "nx build zkksp-prover-angular",
+          "nx build zkksp-prover-angular --c production",
           "docker build -f ./apps/zkksp-prover-angular/Dockerfile . -t zkksp-prover-angular"
         ],
         "parallel": false

@@ -8,18 +8,23 @@ import PrivateKey = classes.PrivateKey;
 
 const TableName = "zkp-svscribe";
 
+const dbConfig = {
+  apiVersion: "latest",
+  region: "us-east-1",
+  endpoint: environment.dynamoDbEndpoint,
+  credentials: {
+    accessKeyId: 'dummy-key',
+    secretAccessKey: 'dummy-secret'
+  }
+};
+
 @Injectable()
 export class DbService implements OnModuleInit {
-  private dbClient: DynamoDB = new DynamoDB({
-    region: "us-east-1",
-    endpoint: environment.dynamoDbEndpoint
-  });
-  private docClient: DocumentClient = new DocumentClient({
-    region: "us-east-1",
-    endpoint: environment.dynamoDbEndpoint
-  });
+  private dbClient: DynamoDB = new DynamoDB(dbConfig);
+  private docClient: DocumentClient = new DocumentClient(dbConfig);
 
   async onModuleInit() {
+    console.log(dbConfig);
     // init db
     await this.dbClient.createTable({
       TableName,

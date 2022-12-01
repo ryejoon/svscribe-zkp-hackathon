@@ -32,7 +32,7 @@
     "start-prover-angular": "nx serve zkksp-prover-angular -c development",
     "start-prover-backend": "nx serve zkksp-prover-backend",
     "start-verifier-backend": "nx serve zkksp-verifier-backend",
-    "dynamodb-local": "java -Djava.library.path=/Users/parkjoonyeong/dynamodb_local_latest -jar .dynamodb/DynamoDBLocal.jar -sharedDb -port 8001"
+    "dynamodb-local": "java -Djava.library.path=/Users/parkjoonyeong/dynamodb_local_latest -jar .dynamodb/DynamoDBLocal.jar -sharedDb -port 8000"
   },
   "private": true,
   "dependencies": {
