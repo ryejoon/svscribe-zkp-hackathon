@@ -14,7 +14,7 @@ export class BlockchainService implements OnModuleInit {
     null, { network: "main" });
 
   onModuleInit() {
-    this.wocClient.getBlockChainInfo().then(r => console.log(r.data));
+    //
   }
 
   async fetchTxsAndFilterFirst(sentAddress: string, receiveAddress: string, usedUtxoMap: UsedUtxoMap, heightAscend: boolean): Promise<string> {

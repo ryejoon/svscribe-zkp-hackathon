@@ -20,6 +20,7 @@ export class DbService implements OnModuleInit {
   });
 
   async onModuleInit() {
+    // init db
     await this.dbClient.createTable({
       TableName,
       AttributeDefinitions: [{
@@ -39,8 +40,28 @@ export class DbService implements OnModuleInit {
         }
       ],
       BillingMode: BillingMode.PAY_PER_REQUEST
+    }).then(async r => {
+      console.log(`inserting test apps to db`);
+      // insert test data
+      const appWalletPk = "Kxw1L6m98UmsBADbJzNgXUVQ3z2UnUUQjWe9mzsz26fSV17KSLMb";
+      await this.insertApp({
+        name: "One Minute App",
+        description: "Subscribe for one minute!",
+        durationSeconds: 60,
+        priceSatoshis: 500,
+        privateKey: appWalletPk,
+        paymentAddress: PrivateKey.from(appWalletPk).toAddress().toString()
+      });
+      await this.insertApp({
+        name: "One Hour App",
+        description: "Subscribe for one hour!",
+        durationSeconds: 60 * 60,
+        priceSatoshis: 1000,
+        privateKey: appWalletPk,
+        paymentAddress: PrivateKey.from(appWalletPk).toAddress().toString()
+      });
     }).catch(err => {
-      //
+      console.log(`db already initialized.`);
     });
   }
 

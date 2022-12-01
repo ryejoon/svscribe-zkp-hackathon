@@ -78,8 +78,6 @@ export class AppController {
       maxContentLength: Infinity,
       maxBodyLength: Infinity,
     }));
-
-    console.log(res);
     return res.data;
   }
 
