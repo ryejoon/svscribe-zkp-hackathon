@@ -40,6 +40,7 @@ import {ConsoleService} from "../service/console.service";
               </div>
               <ng-container *ngIf="context.key">
                 <div fxLayout="column">
+                  <div>PrivateKey: {{context.key?.toString()}}</div>
                   <div fxLayout="row" fxLayoutAlign="space-evenly center" *ngIf="context.balance && !context.processing">
                     <div>Address: {{context.address}}</div>
                     <div>Balance: {{context.balance.confirmed + context.balance.unconfirmed}}</div>

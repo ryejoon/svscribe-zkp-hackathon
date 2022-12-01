@@ -8,14 +8,18 @@ services:
     image: zkksp-prover-backend
     ports:
       - '8083:3333'
+    networks:
+      - open-network
   zkksp-verifier-backend:
     depends_on:
       - dynamodb
     image: zkksp-verifier-backend
     ports:
       - '8084:3334'
+    hostname: verifier
     networks:
       - dynamodb-network
+      - open-network
   dynamodb:
     image: amazon/dynamodb-local
     container_name: svscribe-dynamodb
@@ -30,4 +34,6 @@ services:
       - dynamodb-network
 networks:
   dynamodb-network:
+    driver: bridge
+  open-network:
     driver: bridge

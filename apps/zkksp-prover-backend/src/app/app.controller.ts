@@ -45,7 +45,7 @@ export class AppController {
         console.log(code);
         console.log(signal);
         // currently -w option is not working in scrypt-zokrates and is only reading from 'witness' file
-        exec(`${environment.zokratesCmdPath} generate-key-proof --output ${proofFile}`, execOptions, (error, stdout, stderr) => {
+        exec(`ls -l && ${environment.zokratesCmdPath} generate-key-proof --output ${proofFile}`, execOptions, (error, stdout, stderr) => {
           if (error) {
             console.log(`error: ${error.message}`);
             reject(error);
@@ -69,9 +69,11 @@ export class AppController {
 
   @Post("registerProof")
   async registerProof(@Body() payload: { publicKey: string }) {
-    const proofJson: ProofJson = JSON.parse(fs.readFileSync(`${environment.zokratesCmdPath}/prover/${payload.publicKey}.json`, { encoding: "utf8" }));
-    console.log(`invoking verifier with proof for pubKey ${payload.publicKey}`);
-    const res = await firstValueFrom(this.httpService.post(`${environment.zkpVerifierHost}/register`, {
+    const proofFilePath = `${environment.zokratesDir}/prover/${payload.publicKey}.json`;
+    const proofJson: ProofJson = JSON.parse(fs.readFileSync(proofFilePath, { encoding: "utf8" }));
+    const url = `${environment.zkpVerifierHost}/register`;
+    console.log(`invoking verifier with proof for pubKey ${payload.publicKey} : ${url}`);
+    const res = await firstValueFrom(this.httpService.post(url, {
       publicKey: payload.publicKey,
       proof: proofJson
     }, {
