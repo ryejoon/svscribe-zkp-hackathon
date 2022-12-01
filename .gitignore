@@ -4,6 +4,7 @@
 sample
 zokrates/flattened.json
 zokrates/proof.json
+zokrates/witness
 
 zokrates/prover/*
 zokrates/verifier/*

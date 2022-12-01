@@ -30,20 +30,18 @@ import {ConsoleService} from "../service/console.service";
         <div fxLayout="column" fxFlex="50" class="content">
           <div>
             <div class="title">Wallet</div>
-            <div fxLayout="column" class="title-box">
-              <div fxLayout="row">
-                <div fxFlex="50">
+            <div fxLayout="column" class="title-box" fxLayoutAlign="space-evenly">
+              <div fxLayout="row" fxLayoutAlign="space-evenly center">
                   <button mat-stroked-button (click)="generateRandomKey()">Generate New Key</button>
-                </div>
-                <div fxFlex="50" fxLayout="row">
+                <div fxLayout="row">
                   <input matInput type="text" [(ngModel)]="tempKey"/>
                   <button mat-stroked-button (click)="importKey()">Import Key</button>
                 </div>
               </div>
               <ng-container *ngIf="context.key">
                 <div fxLayout="column">
-                  <div>Address: {{context.address}}</div>
                   <div fxLayout="row" fxLayoutAlign="space-evenly center" *ngIf="context.balance && !context.processing">
+                    <div>Address: {{context.address}}</div>
                     <div>Balance: {{context.balance.confirmed + context.balance.unconfirmed}}</div>
                     <button mat-stroked-button (click)="charge()">Charge 1000 Satoshi</button>
                   </div>
@@ -55,7 +53,7 @@ import {ConsoleService} from "../service/console.service";
             <div class="title">ZKP</div>
             <div class="title-box">
               <div *ngIf="context.proof" class="wrap">
-                ZK-proof file generated on path: {{context.proof.proofFile}}
+                ZK-proof file: {{context.proof.proofFile}}
               </div>
               <div *ngIf="!context.token">Svscribe token not loaded. Please register your zk-proof</div>
               <div *ngIf="context.token">Svscribe Token: {{context.token}} </div>

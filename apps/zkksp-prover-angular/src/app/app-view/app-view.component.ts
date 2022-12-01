@@ -22,20 +22,20 @@ import {ZkpService} from "../service/zkp.service";
               <div>{{app.description}}</div>
               <div>{{app.appId}}</div>
               <div class="gray">{{app.priceSatoshis}} satoshi for {{app.durationSeconds}} seconds</div>
+              <div *ngIf="context.auth && context.remaining >= 0" fxLayout="row">
+                <div class="green">Authorized</div>
+                <div class="gray">{{context.remaining | number: '1.0-0'}} seconds remaining</div>
+              </div>
+              <div *ngIf="context.token && context.auth && !context.auth.authorized" fxLayout="row">
+                <div class="red">Unauthorized</div>
+                <div class="gray">{{context.auth?.reason}}</div>
+              </div>
             </div>
             <div fxFlex="20" fxLayout="column">
               <button mat-stroked-button (click)="pay()" [disabled]="!context.key || context.processing">Pay</button>
               <button mat-stroked-button (click)="checkAuth()" [disabled]="!context.token || context.processing">Check Auth</button>
             </div>
           </div>
-        </div>
-        <div *ngIf="context.auth && context.remaining >= 0" fxLayout="row">
-          <div class="green">Authorized : </div>
-          <div class="gray">{{context.remaining | number: '1.0-0'}} seconds remaining</div>
-        </div>
-        <div *ngIf="context.token && context.auth && !context.auth.authorized" fxLayout="row">
-          <div class="red">Unauthorized : </div>
-          <div class="gray">{{context.auth?.reason}}</div>
         </div>
       </ng-container>
     </div> `,
