@@ -44,7 +44,7 @@ import {ConsoleService} from "../service/console.service";
                   <div fxLayout="row" fxLayoutAlign="space-evenly center" *ngIf="context.balance && !context.processing">
                     <div>Address: {{context.address}}</div>
                     <div>Balance: {{context.balance.confirmed + context.balance.unconfirmed}}</div>
-                    <button mat-stroked-button (click)="charge()">Charge 1000 Satoshi</button>
+                    <button mat-stroked-button (click)="charge()">Charge 2000 Satoshi</button>
                   </div>
                 </div>
               </ng-container>
@@ -126,7 +126,7 @@ export class ProverClientMainComponent {
     const res = await this.sensiletService.sensilet.transferBsv({
       receivers: [{
         address: address,
-        amount: 1000
+        amount: 2000
       }],
       broadcast: true
     })
