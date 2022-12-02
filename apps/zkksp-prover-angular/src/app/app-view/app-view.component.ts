@@ -45,10 +45,12 @@ import {ZkpService} from "../service/zkp.service";
       padding: 10px
     }
     .green {
-      color: green
+      color: green;
+      padding-right: 10px;
     }
     .red {
-      color: red
+      color: red;
+      padding-right: 10px;
     }
     .gray {
       color: darkgray
